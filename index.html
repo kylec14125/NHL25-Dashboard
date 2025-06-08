@@ -23,7 +23,7 @@
   .content.active { display: block; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
-  th, td { padding: 10px; border: 1px solid #005979; }
+  th, td { padding: 10px; border: 1px solid #005979; cursor: pointer; }
   th { background-color: #005979; }
 </style>
 </head>
@@ -42,12 +42,26 @@
 
 <div id="players" class="content active">
   <h2>Player Database</h2>
-  <p>Currently, this just shows placeholder data. We’ll expand later!</p>
+  <table id="playerTable">
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">Name</th>
+        <th onclick="sortTable(1)">Position</th>
+        <th onclick="sortTable(2)">Age</th>
+        <th onclick="sortTable(3)">Contract</th>
+        <th onclick="sortTable(4)">Potential</th>
+        <th onclick="sortTable(5)">Goals</th>
+        <th onclick="sortTable(6)">Assists</th>
+        <th onclick="sortTable(7)">Points</th>
+      </tr>
+    </thead>
+    <tbody id="playerTableBody"></tbody>
+  </table>
 </div>
 
 <div id="lineups" class="content">
   <h2>Lineups</h2>
-  <p>Coming soon! Here’s where your lineups will appear.</p>
+  <p>Lineups are set—no changes needed here!</p>
 </div>
 
 <div id="salary" class="content">
@@ -68,9 +82,45 @@ function showTab(tabId) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
   document.getElementById(tabId).classList.add('active');
-  if (tabId === 'salary') {
-    buildSalaryTables();
-  }
+  if (tabId === 'players') buildPlayerTable();
+  if (tabId === 'salary') buildSalaryTables();
+}
+
+function buildPlayerTable() {
+  const tbody = document.getElementById('playerTableBody');
+  tbody.innerHTML = '';
+  players.forEach(player => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${player.name}</td>
+      <td>${player.position}</td>
+      <td>${player.age}</td>
+      <td>${player.contract}</td>
+      <td>${player.potential || '-'}</td>
+      <td>${player.goals || '-'}</td>
+      <td>${player.assists || '-'}</td>
+      <td>${player.points || '-'}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function sortTable(columnIndex) {
+  const table = document.getElementById("playerTable");
+  const rows = Array.from(table.rows).slice(1);
+  let sorted = rows.sort((a, b) => {
+    const aText = a.cells[columnIndex].textContent.trim();
+    const bText = b.cells[columnIndex].textContent.trim();
+    const aNum = parseFloat(aText);
+    const bNum = parseFloat(bText);
+
+    if (!isNaN(aNum) && !isNaN(bNum)) {
+      return aNum - bNum;
+    } else {
+      return aText.localeCompare(bText);
+    }
+  });
+  rows.forEach(row => table.tBodies[0].appendChild(row));
 }
 
 function buildSalaryTables() {
@@ -94,11 +144,9 @@ function createTable(title, group, isGoalie) {
   const headerRow = document.createElement('tr');
 
   if (isGoalie) {
-    headerRow.innerHTML = `
-      <th>Name</th><th>Age</th><th>Contract</th><th>GAA</th><th>SV%</th><th>Projected Salary</th><th>Status</th>`;
+    headerRow.innerHTML = `<th>Name</th><th>Age</th><th>Contract</th><th>GAA</th><th>SV%</th><th>Projected Salary</th><th>Status</th>`;
   } else {
-    headerRow.innerHTML = `
-      <th>Name</th><th>Age</th><th>Contract</th><th>Goals</th><th>Assists</th><th>Points</th><th>Projected Salary</th><th>Status</th>`;
+    headerRow.innerHTML = `<th>Name</th><th>Age</th><th>Contract</th><th>Goals</th><th>Assists</th><th>Points</th><th>Projected Salary</th><th>Status</th>`;
   }
   thead.appendChild(headerRow);
   table.appendChild(thead);
@@ -111,13 +159,9 @@ function createTable(title, group, isGoalie) {
     const row = document.createElement('tr');
 
     if (isGoalie) {
-      row.innerHTML = `
-        <td>${player.name}</td><td>${player.age}</td><td>${player.contract}</td><td>${player.gaa}</td><td>${player.savePct}</td>
-        <td>$${projected.toFixed(1)}M</td><td>${status}</td>`;
+      row.innerHTML = `<td>${player.name}</td><td>${player.age}</td><td>${player.contract}</td><td>${player.gaa}</td><td>${player.savePct}</td><td>$${projected.toFixed(1)}M</td><td>${status}</td>`;
     } else {
-      row.innerHTML = `
-        <td>${player.name}</td><td>${player.age}</td><td>${player.contract}</td><td>${player.goals}</td><td>${player.assists}</td><td>${player.points}</td>
-        <td>$${projected.toFixed(1)}M</td><td>${status}</td>`;
+      row.innerHTML = `<td>${player.name}</td><td>${player.age}</td><td>${player.contract}</td><td>${player.goals}</td><td>${player.assists}</td><td>${player.points}</td><td>$${projected.toFixed(1)}M</td><td>${status}</td>`;
     }
     tbody.appendChild(row);
   });
@@ -129,7 +173,6 @@ function createTable(title, group, isGoalie) {
 function projectSalary(player, isGoalie) {
   let projected;
   if (isGoalie) {
-    // 🔧 Adjusted goalie formula to produce more realistic salaries (~4-6M range)
     projected = 3 + (0.02 * (player.savePct * 100)) - (0.1 * player.gaa);
   } else {
     projected = 0.13 * player.points;
@@ -141,6 +184,9 @@ function projectSalary(player, isGoalie) {
 
   return projected;
 }
+
+// Load initial table
+buildPlayerTable();
 </script>
 </body>
 </html>
