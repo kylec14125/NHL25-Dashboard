@@ -130,6 +130,7 @@
       try {
         players = JSON.parse(e.target.result);
         displayData(players);
+        buildLineups(); // 🟩 This is the critical fix!
       } catch (err) {
         alert('Error reading file: ' + err.message);
       }
