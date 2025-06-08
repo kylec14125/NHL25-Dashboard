@@ -21,8 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Insight 1: Top scorer
     const topScorer = players.reduce((max, p) => parseInt(p['Points'] || 0) > parseInt(max['Points'] || 0) ? p : max, players[0]);
 
-    // Insight 2: Highest potential (filter for "Elite" or similar)
-    const highestPotential = players.find(p => p['Potential'] && p['Potential'].toLowerCase().includes('elite')) || players[0];
+     // Insight 2: Upcoming contract renewal - find highest overall among players with 1 year left
+  const upcomingRenewals = players.filter(p => parseInt(p['Years'] || 0) === 1);
+  const highestOverallRenewal = upcomingRenewals.reduce((max, p) => parseInt(p['Overall'] || 0) > parseInt(max['Overall'] || 0) ? p : max, upcomingRenewals[0] || {});
 
     // Insight 3: Possible AHL call-up
     const possibleCallUp = players.find(p => parseInt(p['Goals'] || 0) >= 30) || players[0];
