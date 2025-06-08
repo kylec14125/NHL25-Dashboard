@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayPlayerData(players) {
     tableBody.innerHTML = ''; // Clear existing data
     players.forEach(player => {
+console.log(Object.keys(player));
+
       const row = document.createElement('tr');
 
       row.innerHTML = `
