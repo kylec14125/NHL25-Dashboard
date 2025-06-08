@@ -18,6 +18,8 @@
   th, td { padding: 10px; border: 1px solid #005979; }
   th { background-color: #005979; }
 
+  .lineups-container .header-row { display: flex; font-weight: bold; margin-bottom: 5px; text-align: center; }
+  .lineups-container .header-row div { flex: 1; }
   .lineups-container .line { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .lineups-container .chip {
     background-color: #005979;
@@ -87,9 +89,11 @@
     <h2>Lineups</h2>
 
     <h3>Forwards</h3>
+    <div class="header-row"><div>LW</div><div>C</div><div>RW</div><div>Chem</div></div>
     <div id="forwards"></div>
 
     <h3>Defense</h3>
+    <div class="header-row"><div>LD</div><div>RD</div><div>Chem</div></div>
     <div id="defense"></div>
 
     <h3>Goalies</h3>
@@ -174,7 +178,8 @@
       line.classList.add('line');
       for (let j = 0; j < 3; j++) {
         const player = forwardsList[fIndex] || null;
-        line.appendChild(createChip(player, fIndex));
+        const chip = createChip(player, fIndex, 'forwards');
+        line.appendChild(chip);
         fIndex++;
       }
       line.appendChild(createChemBox('forwards', i));
@@ -187,7 +192,8 @@
       line.classList.add('line');
       for (let j = 0; j < 2; j++) {
         const player = defenseList[dIndex] || null;
-        line.appendChild(createChip(player, dIndex));
+        const chip = createChip(player, dIndex, 'defense');
+        line.appendChild(chip);
         dIndex++;
       }
       line.appendChild(createChemBox('defense', i));
@@ -195,18 +201,19 @@
     }
 
     for (let i = 0; i < 2; i++) {
-      const chip = createChip(goaliesList[i] || null, i);
+      const chip = createChip(goaliesList[i] || null, i, 'goalies');
       goalies.appendChild(chip);
     }
 
     enableGlobalDragAndDrop();
   }
 
-  function createChip(player, index) {
+  function createChip(player, index, group) {
     const chip = document.createElement('div');
     chip.classList.add('chip');
     chip.setAttribute('draggable', true);
     chip.dataset.index = index;
+    chip.dataset.group = group;
     chip.ondragstart = e => e.dataTransfer.setData('text/plain', index);
     chip.innerHTML = player ? `
       <strong>${player.name}</strong><br>
@@ -259,9 +266,16 @@
       chip.addEventListener('drop', e => {
         e.preventDefault();
         const draggedIndex = e.dataTransfer.getData('text/plain');
+        const draggedChip = document.querySelector(`.chip[data-index="${draggedIndex}"]`);
+        if (!draggedChip) return;
+        if (draggedChip.dataset.group !== chip.dataset.group) return; // 🛑 prevent cross-group swap
         const targetIndex = chip.dataset.index;
+        const group = chip.dataset.group;
+        const groupList = group === 'forwards' ? players.filter(p => ['LW', 'C', 'RW'].includes(p.position)) :
+                          group === 'defense' ? players.filter(p => ['LD', 'RD'].includes(p.position)) :
+                          players.filter(p => p.position === 'G');
         if (draggedIndex && targetIndex && draggedIndex !== targetIndex) {
-          [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
+          [groupList[draggedIndex], groupList[targetIndex]] = [groupList[targetIndex], groupList[draggedIndex]];
           buildLineups();
         }
       });
