@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Papa.parse(csvData, {
           header: true,
           skipEmptyLines: true,
+          transformHeader: header => header.trim(), // This line trims whitespace
           complete: function(results) {
             const data = results.data;
             console.log(data); // View parsed data
