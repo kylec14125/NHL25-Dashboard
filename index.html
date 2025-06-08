@@ -77,12 +77,10 @@ function buildSalaryTables() {
   const salaryContent = document.getElementById('salaryContent');
   salaryContent.innerHTML = '';
 
-  // Group players
   const forwards = players.filter(p => ['LW', 'C', 'RW'].includes(p.position)).sort((a, b) => a.name.localeCompare(b.name));
   const defense = players.filter(p => ['LD', 'RD'].includes(p.position)).sort((a, b) => a.name.localeCompare(b.name));
   const goalies = players.filter(p => p.position === 'G').sort((a, b) => a.name.localeCompare(b.name));
 
-  // Build tables
   salaryContent.appendChild(createTable('Forwards', forwards, false));
   salaryContent.appendChild(createTable('Defense', defense, false));
   salaryContent.appendChild(createTable('Goalies', goalies, true));
@@ -138,9 +136,10 @@ function projectSalary(player, isGoalie) {
 
   // Age & potential adjustments
   if (player.age < 26) projected *= 1.1;
-  if (player.potential && /(Elite|Franchise)/.test(player.potential)) projected *= 1.1;
   if (player.age > 32) projected *= 0.9;
+  if (player.potential && /(Elite|Franchise)/.test(player.potential)) projected *= 1.1;
 
+  // Ready for easy future tweaks!
   return projected;
 }
 
