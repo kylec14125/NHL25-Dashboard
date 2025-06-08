@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>${cleanPlayer['Player Name']}</td>
+        <td>${cleanPlayer['Player']}</td>
         <td>${cleanPlayer['Age']}</td>
         <td>${cleanPlayer['Play Type']}</td>
         <td>${cleanPlayer['Position']}</td>
@@ -43,8 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${cleanPlayer['Assists']}</td>
         <td>${cleanPlayer['Points']}</td>
         <td>${cleanPlayer['Plus Minus']}</td>
-        <td>${cleanPlayer['Contract Amount']}</td>
-        <td>${cleanPlayer['Contact Years']}</td>
+        <td>${cleanPlayer['$']}</td>
+        <td>${cleanPlayer['Years']}</td>
       `;
       tableBody.appendChild(row);
     });
