@@ -30,7 +30,7 @@
     cursor: move;
     width: 120px;
     text-align: center;
-    min-height: 70px; /* consistent height */
+    min-height: 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -46,9 +46,17 @@
   }
   .position-header {
     display: flex;
+    justify-content: flex-start;
     gap: 10px;
     margin-bottom: 5px;
     font-weight: bold;
+  }
+  .position-header div {
+    width: 120px;
+    text-align: center;
+  }
+  .position-header div:last-child {
+    width: 60px;
   }
 </style>
 </head>
@@ -89,18 +97,18 @@
 
   <h3>Forwards</h3>
   <div class="position-header">
-    <div style="width:120px;">LW</div>
-    <div style="width:120px;">C</div>
-    <div style="width:120px;">RW</div>
-    <div style="width:60px;">Chem</div>
+    <div>LW</div>
+    <div>C</div>
+    <div>RW</div>
+    <div>Chem</div>
   </div>
   <div id="forwards"></div>
 
   <h3>Defense</h3>
   <div class="position-header">
-    <div style="width:120px;">LD</div>
-    <div style="width:120px;">RD</div>
-    <div style="width:60px;">Chem</div>
+    <div>LD</div>
+    <div>RD</div>
+    <div>Chem</div>
   </div>
   <div id="defense"></div>
 
@@ -168,7 +176,6 @@
     defense.innerHTML = '';
     goalies.innerHTML = '';
 
-    // Categorize players
     let usedPlayers = [];
     const fwdPlayers = players.filter(p => ['LW', 'C', 'RW'].includes(p.position));
     const dPlayers = players.filter(p => ['LD', 'RD'].includes(p.position));
@@ -216,6 +223,7 @@
     const chip = document.createElement('div');
     chip.classList.add('chip');
     chip.setAttribute('draggable', true);
+    chip.dataset.index = index;
     chip.ondragstart = e => e.dataTransfer.setData('text/plain', index);
     if (player) {
       chip.innerHTML = `
@@ -245,17 +253,15 @@
 
   function enableDragAndDrop() {
     document.querySelectorAll('.line').forEach(line => {
-      line.ondragover = e => e.preventDefault();
-      line.ondrop = e => {
+      let dragged;
+      line.addEventListener('dragstart', e => dragged = e.target);
+      line.addEventListener('dragover', e => e.preventDefault());
+      line.addEventListener('drop', e => {
         e.preventDefault();
-        const draggedIndex = e.dataTransfer.getData('text/plain');
-        const targetChip = e.target.closest('.chip');
-        if (targetChip && draggedIndex !== '') {
-          const targetIndex = Array.from(document.querySelectorAll('.chip')).indexOf(targetChip);
-          [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
-          buildLineups();
+        if (dragged && e.target.classList.contains('chip') && dragged !== e.target) {
+          line.insertBefore(dragged, e.target.nextSibling);
         }
-      };
+      });
     });
   }
 </script>
