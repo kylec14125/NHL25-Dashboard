@@ -14,17 +14,30 @@
   .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
   .content.active { display: block; }
 
-  .lineups-container .header-row { display: flex; font-weight: bold; margin-bottom: 5px; text-align: center; }
-  .lineups-container .header-row div { flex: 1; }
-  .lineups-container .line { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
+  th, td { padding: 10px; border: 1px solid #005979; }
+  th { background-color: #005979; }
+
+  .lineups-container .header-row,
+  .lineups-container .line {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) 50px;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .lineups-container .header-row div,
+  .lineups-container .line .chip,
+  .lineups-container .line .chem-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .lineups-container .header-row { font-weight: bold; }
   .lineups-container .chip {
     background-color: #005979;
     border: 1px solid #012d40;
-    flex: 1;
     min-height: 70px;
-    display: flex;
     flex-direction: column;
-    justify-content: center;
     text-align: center;
     font-size: 0.8rem;
     border-radius: 5px;
@@ -33,10 +46,7 @@
   .lineups-container .chem-box {
     width: 50px;
     height: 70px;
-    display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
     font-weight: bold;
     border-radius: 5px;
   }
@@ -54,10 +64,33 @@
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="showTab('lineups')">Lineups</div>
+  <div class="tab active" onclick="showTab('players')">Player Database</div>
+  <div class="tab" onclick="showTab('lineups')">Lineups</div>
 </div>
 
-<div id="lineups" class="content active">
+<div id="players" class="content active">
+  <h2>Upload Player Data (JSON)</h2>
+  <input type="file" id="dataFile" />
+  <button onclick="loadData()">Load Data</button>
+
+  <h2>Player Stats</h2>
+  <table id="playerTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Age</th>
+        <th>Overall</th>
+        <th>Contract</th>
+        <th>Potential</th>
+        <th>Projected Salary</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="lineups" class="content">
   <div class="lineups-container">
     <h2>Lineups</h2>
 
@@ -75,20 +108,62 @@
 </div>
 
 <script>
-  let players = [
-    {"name":"Matty Beniers","position":"C","age":21,"overall":87,"contract":"3.5M x 3","potential":"High Elite"},
-    {"name":"Jared McCann","position":"LW","age":27,"overall":85,"contract":"5.0M x 4","potential":"Medium Top 6"},
-    {"name":"Jordan Eberle","position":"RW","age":33,"overall":82,"contract":"5.5M x 2","potential":"Low Top 6"},
-    {"name":"Vince Dunn","position":"LD","age":26,"overall":84,"contract":"4.0M x 2","potential":"Medium Elite"},
-    {"name":"Adam Larsson","position":"RD","age":30,"overall":81,"contract":"4.2M x 3","potential":"High Top 4"},
-    {"name":"Philipp Grubauer","position":"G","age":31,"overall":83,"contract":"5.9M x 3","potential":"Medium Starter"},
-    {"name":"Jamie Oleksiak","position":"LD","age":31,"overall":80,"contract":"3.8M x 3","potential":"Low Top 4"},
-    {"name":"Yanni Gourde","position":"C","age":31,"overall":82,"contract":"5.1M x 2","potential":"Medium Top 9"},
-    {"name":"Oliver Bjorkstrand","position":"RW","age":28,"overall":83,"contract":"5.4M x 4","potential":"High Top 6"},
-    {"name":"Andre Burakovsky","position":"LW","age":28,"overall":84,"contract":"5.5M x 4","potential":"Medium Elite"}
-  ];
-
+  let players = [];
+  let initialized = false;
   let chemValues = { forwards: [0, 0, 0, 0], defense: [0, 0, 0] };
+
+  function showTab(tabId) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    if (tabId === 'lineups' && !initialized) {
+      buildLineups();
+      initialized = true;
+    }
+  }
+
+  function loadData() {
+    const fileInput = document.getElementById('dataFile');
+    const file = fileInput.files[0];
+    if (!file) { alert('Please select a file!'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        players = JSON.parse(e.target.result);
+        displayData(players);
+        buildLineups();
+      } catch (err) {
+        alert('Error reading file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function displayData(players) {
+    const tableBody = document.querySelector('#playerTable tbody');
+    tableBody.innerHTML = '';
+    players.forEach(player => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${player.name}</td>
+        <td>${player.position}</td>
+        <td>${player.age}</td>
+        <td>${player.overall}</td>
+        <td>${player.contract}</td>
+        <td>${player.potential}</td>
+        <td>${projectSalary(player)}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  function projectSalary(player) {
+    const base = 1000000;
+    const multiplier = 50000;
+    const projected = base + (player.overall * multiplier);
+    return `$${(projected / 1000000).toFixed(2)}M`;
+  }
 
   function buildLineups() {
     const forwards = document.getElementById('forwards');
@@ -211,6 +286,7 @@
     });
   }
 
+  // Initial build
   buildLineups();
 </script>
 </body>
