@@ -14,12 +14,10 @@
   .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
   .content.active { display: block; }
 
-  /* TABLE STYLING */
   table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
   th, td { padding: 10px; border: 1px solid #005979; }
   th { background-color: #005979; }
 
-  /* LINEUPS STYLING SCOPE */
   .lineups-container .line { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .lineups-container .chip {
     background-color: #005979;
@@ -164,12 +162,16 @@
     defense.innerHTML = '';
     goalies.innerHTML = '';
 
+    const forwardsList = players.filter(p => ['LW', 'C', 'RW'].includes(p.position));
+    const defenseList = players.filter(p => ['LD', 'RD'].includes(p.position));
+    const goaliesList = players.filter(p => p.position === 'G');
+
     let fIndex = 0;
     for (let i = 0; i < 4; i++) {
       const line = document.createElement('div');
       line.classList.add('line');
       for (let j = 0; j < 3; j++) {
-        const player = players[fIndex] || null;
+        const player = forwardsList[fIndex] || null;
         line.appendChild(createChip(player, fIndex));
         fIndex++;
       }
@@ -177,12 +179,12 @@
       forwards.appendChild(line);
     }
 
-    let dIndex = fIndex;
+    let dIndex = 0;
     for (let i = 0; i < 3; i++) {
       const line = document.createElement('div');
       line.classList.add('line');
       for (let j = 0; j < 2; j++) {
-        const player = players[dIndex] || null;
+        const player = defenseList[dIndex] || null;
         line.appendChild(createChip(player, dIndex));
         dIndex++;
       }
@@ -190,8 +192,8 @@
       defense.appendChild(line);
     }
 
-    for (let i = dIndex; i < dIndex + 2; i++) {
-      const chip = createChip(players[i] || null, i);
+    for (let i = 0; i < 2; i++) {
+      const chip = createChip(goaliesList[i] || null, i);
       goalies.appendChild(chip);
     }
 
