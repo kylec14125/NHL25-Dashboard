@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kraken Assistant GM</title>
+<title>Kyle's AI Assistant</title>
 <style>
   body { background-color: #001628; color: #ffffff; font-family: Arial, sans-serif; margin: 0; }
-  header { background-color: #005979; padding: 20px; text-align: center; }
-  h1 { margin: 0; color: #e03a3e; font-size: 2rem; }
-  .tabs { display: flex; background-color: #012d40; }
-  .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; background-color: #012d40; }
-  .tab.active { background-color: #005979; }
+  header { background-color: #005979; padding: 20px; text-align: center; position: relative; }
+  h1 { margin: 0; color: #ffffff; font-size: 2rem; }
+  header img { width: 50px; height: auto; position: absolute; top: 15px; left: 15px; }
+
+  .tabs { display: flex; justify-content: center; background-color: #012d40; border-radius: 25px; margin: 20px auto; max-width: 300px; overflow: hidden; }
+  .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; background-color: #012d40; border-radius: 25px; transition: background-color 0.3s, color 0.3s; }
+  .tab.active { background-color: #005979; color: #ffffff; }
+
   .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
   .content.active { display: block; }
 
@@ -74,7 +77,8 @@
 <body>
 
 <header>
-  <h1>Seattle Kraken Assistant GM</h1>
+  <img src="https://upload.wikimedia.org/wikipedia/en/8/8e/Seattle_Kraken_official_logo.svg" alt="Kraken Logo" />
+  <h1>Kyle's AI Assistant</h1>
 </header>
 
 <div class="tabs">
@@ -122,190 +126,190 @@
 </div>
 
 <script>
-  let players = [];
-  let initialized = false;
-  let chemValues = { forwards: [0, 0, 0, 0], defense: [0, 0, 0] };
+let players = [];
+let initialized = false;
+let chemValues = { forwards: [0, 0, 0, 0], defense: [0, 0, 0] };
 
-  function showTab(tabId) {
-    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-    document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-    if (tabId === 'lineups' && !initialized) {
+function showTab(tabId) {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+  if (tabId === 'lineups' && !initialized) {
+    buildLineups();
+    initialized = true;
+  }
+}
+
+function loadData() {
+  const fileInput = document.getElementById('dataFile');
+  const file = fileInput.files[0];
+  if (!file) { alert('Please select a file!'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      players = JSON.parse(e.target.result);
+      displayData(players);
       buildLineups();
-      initialized = true;
+    } catch (err) {
+      alert('Error reading file: ' + err.message);
     }
+  };
+  reader.readAsText(file);
+}
+
+function displayData(players) {
+  const tableBody = document.querySelector('#playerTable tbody');
+  tableBody.innerHTML = '';
+  players.forEach(player => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${player.name}</td>
+      <td>${player.position}</td>
+      <td>${player.age}</td>
+      <td>${player.overall}</td>
+      <td>${player.contract}</td>
+      <td>${player.potential}</td>
+      <td>${projectSalary(player)}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function projectSalary(player) {
+  const base = 1000000;
+  const multiplier = 50000;
+  const projected = base + (player.overall * multiplier);
+  return `$${(projected / 1000000).toFixed(2)}M`;
+}
+
+function buildLineups() {
+  const forwards = document.getElementById('forwards');
+  const defense = document.getElementById('defense');
+  const goalies = document.getElementById('goalies');
+
+  forwards.innerHTML = '';
+  defense.innerHTML = '';
+  goalies.innerHTML = '';
+
+  const forwardsList = players.filter(p => ['LW', 'C', 'RW'].includes(p.position));
+  const defenseList = players.filter(p => ['LD', 'RD'].includes(p.position));
+  const goaliesList = players.filter(p => p.position === 'G');
+
+  let fIndex = 0;
+  for (let i = 0; i < 4; i++) {
+    const line = document.createElement('div');
+    line.classList.add('line', 'forwards-line');
+    for (let j = 0; j < 3; j++) {
+      const player = forwardsList[fIndex] || null;
+      const chip = createChip(player, fIndex, 'forwards');
+      line.appendChild(chip);
+      fIndex++;
+    }
+    line.appendChild(createChemBox('forwards', i));
+    forwards.appendChild(line);
   }
 
-  function loadData() {
-    const fileInput = document.getElementById('dataFile');
-    const file = fileInput.files[0];
-    if (!file) { alert('Please select a file!'); return; }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        players = JSON.parse(e.target.result);
-        displayData(players);
+  let dIndex = 0;
+  for (let i = 0; i < 3; i++) {
+    const line = document.createElement('div');
+    line.classList.add('line', 'defense-line');
+    for (let j = 0; j < 2; j++) {
+      const player = defenseList[dIndex] || null;
+      const chip = createChip(player, dIndex, 'defense');
+      line.appendChild(chip);
+      dIndex++;
+    }
+    line.appendChild(createChemBox('defense', i));
+    defense.appendChild(line);
+  }
+
+  for (let i = 0; i < 2; i++) {
+    const chip = createChip(goaliesList[i] || null, i, 'goalies');
+    goalies.appendChild(chip);
+  }
+
+  enableGlobalDragAndDrop();
+}
+
+function createChip(player, index, group) {
+  const chip = document.createElement('div');
+  chip.classList.add('chip');
+  chip.setAttribute('draggable', true);
+  chip.dataset.group = group;
+  chip.innerHTML = player ? `
+    <strong>${player.name}</strong><br>
+    ${player.position}, Age: ${player.age}<br>
+    Potential: ${player.potential}<br>
+    Contract: ${player.contract}
+  ` : 'Player Needed';
+  if (!player) chip.classList.add('placeholder');
+  chip.ondragstart = e => {
+    const playerName = player ? player.name : '';
+    e.dataTransfer.setData('text/plain', JSON.stringify({ name: playerName }));
+  };
+  return chip;
+}
+
+function createChemBox(type, index) {
+  const chemBox = document.createElement('div');
+  chemBox.classList.add('chem-box');
+  updateChemColor(chemBox, chemValues[type][index]);
+  chemBox.innerHTML = chemValues[type][index];
+
+  const controls = document.createElement('div');
+  controls.classList.add('chem-controls');
+  const inc = document.createElement('button');
+  inc.textContent = '+';
+  inc.onclick = () => adjustChem(type, index, 1, chemBox);
+  const dec = document.createElement('button');
+  dec.textContent = '–';
+  dec.onclick = () => adjustChem(type, index, -1, chemBox);
+  controls.appendChild(inc);
+  controls.appendChild(dec);
+
+  chemBox.appendChild(controls);
+  return chemBox;
+}
+
+function adjustChem(type, index, delta, box) {
+  chemValues[type][index] = Math.max(-5, Math.min(5, chemValues[type][index] + delta));
+  box.firstChild.textContent = chemValues[type][index];
+  updateChemColor(box, chemValues[type][index]);
+}
+
+function updateChemColor(box, value) {
+  box.classList.remove('chem-positive', 'chem-neutral', 'chem-negative');
+  if (value > 0) box.classList.add('chem-positive');
+  else if (value < 0) box.classList.add('chem-negative');
+  else box.classList.add('chem-neutral');
+}
+
+// 🚀 Drag and drop fix
+function enableGlobalDragAndDrop() {
+  const chips = document.querySelectorAll('.chip');
+  chips.forEach(chip => {
+    chip.addEventListener('dragover', e => e.preventDefault());
+    chip.addEventListener('drop', e => {
+      e.preventDefault();
+      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      const draggedName = data.name;
+      const targetName = chip.querySelector('strong')?.textContent;
+
+      if (!draggedName || !targetName || draggedName === targetName) return;
+
+      const draggedIndex = players.findIndex(p => p.name === draggedName);
+      const targetIndex = players.findIndex(p => p.name === targetName);
+
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
         buildLineups();
-      } catch (err) {
-        alert('Error reading file: ' + err.message);
       }
-    };
-    reader.readAsText(file);
-  }
-
-  function displayData(players) {
-    const tableBody = document.querySelector('#playerTable tbody');
-    tableBody.innerHTML = '';
-    players.forEach(player => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${player.name}</td>
-        <td>${player.position}</td>
-        <td>${player.age}</td>
-        <td>${player.overall}</td>
-        <td>${player.contract}</td>
-        <td>${player.potential}</td>
-        <td>${projectSalary(player)}</td>
-      `;
-      tableBody.appendChild(row);
     });
-  }
+  });
+}
 
-  function projectSalary(player) {
-    const base = 1000000;
-    const multiplier = 50000;
-    const projected = base + (player.overall * multiplier);
-    return `$${(projected / 1000000).toFixed(2)}M`;
-  }
-
-  function buildLineups() {
-    const forwards = document.getElementById('forwards');
-    const defense = document.getElementById('defense');
-    const goalies = document.getElementById('goalies');
-
-    forwards.innerHTML = '';
-    defense.innerHTML = '';
-    goalies.innerHTML = '';
-
-    const forwardsList = players.filter(p => ['LW', 'C', 'RW'].includes(p.position));
-    const defenseList = players.filter(p => ['LD', 'RD'].includes(p.position));
-    const goaliesList = players.filter(p => p.position === 'G');
-
-    let fIndex = 0;
-    for (let i = 0; i < 4; i++) {
-      const line = document.createElement('div');
-      line.classList.add('line', 'forwards-line');
-      for (let j = 0; j < 3; j++) {
-        const player = forwardsList[fIndex] || null;
-        const chip = createChip(player, fIndex, 'forwards');
-        line.appendChild(chip);
-        fIndex++;
-      }
-      line.appendChild(createChemBox('forwards', i));
-      forwards.appendChild(line);
-    }
-
-    let dIndex = 0;
-    for (let i = 0; i < 3; i++) {
-      const line = document.createElement('div');
-      line.classList.add('line', 'defense-line');
-      for (let j = 0; j < 2; j++) {
-        const player = defenseList[dIndex] || null;
-        const chip = createChip(player, dIndex, 'defense');
-        line.appendChild(chip);
-        dIndex++;
-      }
-      line.appendChild(createChemBox('defense', i));
-      defense.appendChild(line);
-    }
-
-    for (let i = 0; i < 2; i++) {
-      const chip = createChip(goaliesList[i] || null, i, 'goalies');
-      goalies.appendChild(chip);
-    }
-
-    enableGlobalDragAndDrop();
-  }
-
-  function createChip(player, index, group) {
-    const chip = document.createElement('div');
-    chip.classList.add('chip');
-    chip.setAttribute('draggable', true);
-    chip.dataset.group = group;
-    chip.innerHTML = player ? `
-      <strong>${player.name}</strong><br>
-      ${player.position}, Age: ${player.age}<br>
-      Potential: ${player.potential}<br>
-      Contract: ${player.contract}
-    ` : 'Player Needed';
-    if (!player) chip.classList.add('placeholder');
-    chip.ondragstart = e => {
-      const playerName = player ? player.name : '';
-      e.dataTransfer.setData('text/plain', JSON.stringify({ name: playerName }));
-    };
-    return chip;
-  }
-
-  function createChemBox(type, index) {
-    const chemBox = document.createElement('div');
-    chemBox.classList.add('chem-box');
-    updateChemColor(chemBox, chemValues[type][index]);
-    chemBox.innerHTML = chemValues[type][index];
-
-    const controls = document.createElement('div');
-    controls.classList.add('chem-controls');
-    const inc = document.createElement('button');
-    inc.textContent = '+';
-    inc.onclick = () => adjustChem(type, index, 1, chemBox);
-    const dec = document.createElement('button');
-    dec.textContent = '–';
-    dec.onclick = () => adjustChem(type, index, -1, chemBox);
-    controls.appendChild(inc);
-    controls.appendChild(dec);
-
-    chemBox.appendChild(controls);
-    return chemBox;
-  }
-
-  function adjustChem(type, index, delta, box) {
-    chemValues[type][index] = Math.max(-5, Math.min(5, chemValues[type][index] + delta));
-    box.firstChild.textContent = chemValues[type][index];
-    updateChemColor(box, chemValues[type][index]);
-  }
-
-  function updateChemColor(box, value) {
-    box.classList.remove('chem-positive', 'chem-neutral', 'chem-negative');
-    if (value > 0) box.classList.add('chem-positive');
-    else if (value < 0) box.classList.add('chem-negative');
-    else box.classList.add('chem-neutral');
-  }
-
-  // 🚀 Updated Drag-and-Drop Logic!
-  function enableGlobalDragAndDrop() {
-    const chips = document.querySelectorAll('.chip');
-    chips.forEach(chip => {
-      chip.addEventListener('dragover', e => e.preventDefault());
-      chip.addEventListener('drop', e => {
-        e.preventDefault();
-        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-        const draggedName = data.name;
-        const targetName = chip.querySelector('strong')?.textContent;
-
-        if (!draggedName || !targetName || draggedName === targetName) return;
-
-        const draggedIndex = players.findIndex(p => p.name === draggedName);
-        const targetIndex = players.findIndex(p => p.name === targetName);
-
-        if (draggedIndex !== -1 && targetIndex !== -1) {
-          [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
-          buildLineups();
-        }
-      });
-    });
-  }
-
-  buildLineups();
+buildLineups();
 </script>
 </body>
 </html>
