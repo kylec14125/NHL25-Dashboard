@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Players - NHL Assistant GM</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
 </head>
 <body>
   <header>
@@ -22,35 +24,33 @@
 
   <main>
     <h2>Player Stats</h2>
-    <p>Upload your CSV file with updated player stats to track progression and get insights.</p>
-    
-    <input type="file" id="csvFileInput" accept=".csv" />
-    <button id="uploadButton">Upload</button>
-    
     <h3>Player Data</h3>
-    <table id="playersTable" border="1">
+    <table id="playersTable" class="display">
       <thead>
-  <tr>
-    <th>Name</th>
-    <th>Age</th>
-    <th>Play Type</th>
-    <th>Position</th>
-    <th>Overall</th>
-    <th>Potential</th>
-    <th>Goals</th>
-    <th>Assists</th>
-    <th>Points</th>
-    <th>Plus Minus</th>
-    <th>Contract Amount</th>
-    <th>Contact Years</th>
-  </tr>
-</thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Play Type</th>
+          <th>Position</th>
+          <th>Overall</th>
+          <th>Potential</th>
+          <th>Goals</th>
+          <th>Assists</th>
+          <th>Points</th>
+          <th>Plus Minus</th>
+          <th>Contract Amount</th>
+          <th>Contact Years</th>
+        </tr>
+      </thead>
       <tbody>
-        <!-- Player data will be inserted here -->
+        <!-- Player data dynamically inserted -->
       </tbody>
     </table>
   </main>
 
   <script src="js/players.js"></script>
+  <!-- jQuery and DataTables -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 </body>
 </html>
