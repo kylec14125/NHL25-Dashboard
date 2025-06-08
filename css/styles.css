@@ -37,7 +37,7 @@ nav ul li a:focus {
 }
 
 main {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 2rem;
   background: rgba(255, 255, 255, 0.05);
@@ -53,17 +53,24 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  table-layout: fixed;
 }
 
 th, td {
-  padding: 0.5rem 1rem;
-  text-align: center;
-  border: 1px solid #1a3a4f;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #1a3a4f;
+  word-wrap: break-word;
 }
 
 th {
   background-color: #00121e;
   color: #76c5d5;
+  font-size: 1rem;
+}
+
+td {
+  font-size: 0.95rem;
 }
 
 tr:nth-child(even) {
@@ -71,5 +78,5 @@ tr:nth-child(even) {
 }
 
 tr:hover {
-  background-color: rgba(118, 197, 213, 0.2);
+  background-color: rgba(118, 197, 213, 0.1);
 }
