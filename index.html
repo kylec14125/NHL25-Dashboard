@@ -1,128 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kraken Assistant GM</title>
-  <style>
-    body {
-      background-color: #001628;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: #005979;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      margin: 0;
-      color: #e03a3e;
-      font-size: 2rem;
-    }
-    main {
-      padding: 20px;
-    }
-    .upload-section {
-      margin-bottom: 20px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #012d40;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #005979;
-    }
-    th {
-      background-color: #005979;
-    }
-    .button {
-      background-color: #e03a3e;
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .button:hover {
-      background-color: #c22e2e;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kraken Assistant GM</title>
+<style>
+  body { background-color: #001628; color: #ffffff; font-family: Arial, sans-serif; margin: 0; }
+  header { background-color: #005979; padding: 20px; text-align: center; }
+  h1 { margin: 0; color: #e03a3e; font-size: 2rem; }
+  .tabs { display: flex; background-color: #012d40; }
+  .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; background-color: #012d40; }
+  .tab.active { background-color: #005979; }
+  .content { display: none; padding: 20px; }
+  .content.active { display: block; }
+
+  /* Player Table */
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
+  th, td { padding: 10px; border: 1px solid #005979; }
+  th { background-color: #005979; }
+
+  .button { background-color: #e03a3e; color: #fff; border: none; padding: 10px 15px; cursor: pointer; margin-top: 10px; }
+  .button:hover { background-color: #c22e2e; }
+
+  /* Player Chips */
+  .lineup { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  .chip {
+    background-color: #005979;
+    border: 1px solid #012d40;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: move;
+    width: 150px;
+    text-align: center;
+  }
+  .chip.placeholder { background-color: #e03a3e; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Seattle Kraken Assistant GM</h1>
-  </header>
-  <main>
-    <section class="upload-section">
-      <h2>Upload Player Data (JSON)</h2>
-      <input type="file" id="dataFile" />
-      <button class="button" onclick="loadData()">Load Data</button>
-    </section>
-    <section id="dataDisplay">
-      <h2>Player Stats</h2>
-      <table id="playerTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Position</th>
-            <th>Age</th>
-            <th>Overall</th>
-            <th>Contract</th>
-            <th>Projected Salary</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </section>
-  </main>
-  <script>
-    function loadData() {
-      const fileInput = document.getElementById('dataFile');
-      const file = fileInput.files[0];
-      if (!file) {
-        alert('Please select a file!');
-        return;
+
+<header>
+  <h1>Seattle Kraken Assistant GM</h1>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('players')">Player Database</div>
+  <div class="tab" onclick="showTab('lineups')">Lineups</div>
+</div>
+
+<div id="players" class="content active">
+  <h2>Upload Player Data (JSON)</h2>
+  <input type="file" id="dataFile" />
+  <button class="button" onclick="loadData()">Load Data</button>
+
+  <h2>Player Stats</h2>
+  <table id="playerTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Age</th>
+        <th>Overall</th>
+        <th>Contract</th>
+        <th>Projected Salary</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="lineups" class="content">
+  <h2>Lineups</h2>
+  <div class="lineup" id="lineupArea"></div>
+</div>
+
+<script>
+  let players = [];
+
+  function showTab(tabId) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    if (tabId === 'lineups') buildLineups();
+  }
+
+  function loadData() {
+    const fileInput = document.getElementById('dataFile');
+    const file = fileInput.files[0];
+    if (!file) { alert('Please select a file!'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        players = JSON.parse(e.target.result);
+        displayData(players);
+      } catch (err) {
+        alert('Error reading file: ' + err.message);
       }
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          displayData(data);
-        } catch (err) {
-          alert('Error reading file: ' + err.message);
-        }
-      };
-      reader.readAsText(file);
-    }
-    function displayData(players) {
-      const tableBody = document.querySelector('#playerTable tbody');
-      tableBody.innerHTML = '';
-      players.forEach(player => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${player.name}</td>
-          <td>${player.position}</td>
-          <td>${player.age}</td>
-          <td>${player.overall}</td>
-          <td>${player.contract}</td>
-          <td>${projectSalary(player)}</td>
+    };
+    reader.readAsText(file);
+  }
+
+  function displayData(players) {
+    const tableBody = document.querySelector('#playerTable tbody');
+    tableBody.innerHTML = '';
+    players.forEach(player => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${player.name}</td>
+        <td>${player.position}</td>
+        <td>${player.age}</td>
+        <td>${player.overall}</td>
+        <td>${player.contract}</td>
+        <td>${projectSalary(player)}</td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  function projectSalary(player) {
+    const base = 1000000;
+    const multiplier = 50000;
+    const projected = base + (player.overall * multiplier);
+    return `$${(projected / 1000000).toFixed(2)}M`;
+  }
+
+  function buildLineups() {
+    const area = document.getElementById('lineupArea');
+    area.innerHTML = '';
+
+    // Create 6 slots as a test: 4 forwards, 2 defense
+    const slots = [
+      { position: 'C', index: 0 },
+      { position: 'LW', index: 1 },
+      { position: 'RW', index: 2 },
+      { position: 'LD', index: 3 },
+      { position: 'RD', index: 4 },
+      { position: 'G', index: 5 },
+    ];
+
+    slots.forEach((slot, i) => {
+      const player = players[i] || null;
+      const chip = document.createElement('div');
+      chip.classList.add('chip');
+      chip.setAttribute('draggable', true);
+      chip.ondragstart = e => e.dataTransfer.setData('text/plain', i);
+
+      if (player) {
+        chip.innerHTML = `
+          <strong>${player.name}</strong><br>
+          Type: SNP<br>
+          Contract: ${player.contract}<br>
+          Potential: TBD
         `;
-        tableBody.appendChild(row);
-      });
-    }
-    function projectSalary(player) {
-      const base = 1000000;
-      const multiplier = 50000;
-      const projected = base + (player.overall * multiplier);
-      return `$${(projected / 1000000).toFixed(2)}M`;
-    }
-  </script>
+      } else {
+        chip.classList.add('placeholder');
+        chip.innerHTML = 'Player Needed';
+      }
+      area.appendChild(chip);
+    });
+
+    // Enable drop functionality
+    area.ondragover = e => e.preventDefault();
+    area.ondrop = e => {
+      e.preventDefault();
+      const draggedIndex = e.dataTransfer.getData('text/plain');
+      const targetChip = e.target.closest('.chip');
+      if (targetChip && draggedIndex !== '') {
+        const targetIndex = Array.from(area.children).indexOf(targetChip);
+        // Swap players in players array
+        [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
+        buildLineups();
+      }
+    };
+  }
+</script>
 </body>
 </html>
