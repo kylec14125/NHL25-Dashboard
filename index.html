@@ -21,7 +21,7 @@
   .lineups-container .header-row,
   .lineups-container .line {
     display: grid;
-    grid-template-columns: repeat(3, 1fr) 50px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 50px;
     gap: 10px;
     margin-bottom: 10px;
   }
@@ -286,7 +286,6 @@
     });
   }
 
-  // Initial build
   buildLineups();
 </script>
 </body>
