@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kraken Assistant GM</title>
+  <style>
+    body {
+      background-color: #001628;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #005979;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+      color: #e03a3e;
+      font-size: 2rem;
+    }
+    main {
+      padding: 20px;
+    }
+    .upload-section {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #012d40;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #005979;
+    }
+    th {
+      background-color: #005979;
+    }
+    .button {
+      background-color: #e03a3e;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .button:hover {
+      background-color: #c22e2e;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Seattle Kraken Assistant GM</h1>
+  </header>
+  <main>
+    <section class="upload-section">
+      <h2>Upload Player Data (JSON)</h2>
+      <input type="file" id="dataFile" />
+      <button class="button" onclick="loadData()">Load Data</button>
+    </section>
+    <section id="dataDisplay">
+      <h2>Player Stats</h2>
+      <table id="playerTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Age</th>
+            <th>Overall</th>
+            <th>Contract</th>
+            <th>Projected Salary</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    function loadData() {
+      const fileInput = document.getElementById('dataFile');
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Please select a file!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          displayData(data);
+        } catch (err) {
+          alert('Error reading file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+    function displayData(players) {
+      const tableBody = document.querySelector('#playerTable tbody');
+      tableBody.innerHTML = '';
+      players.forEach(player => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${player.name}</td>
+          <td>${player.position}</td>
+          <td>${player.age}</td>
+          <td>${player.overall}</td>
+          <td>${player.contract}</td>
+          <td>${projectSalary(player)}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+    function projectSalary(player) {
+      const base = 1000000;
+      const multiplier = 50000;
+      const projected = base + (player.overall * multiplier);
+      return `$${(projected / 1000000).toFixed(2)}M`;
+    }
+  </script>
+</body>
+</html>
