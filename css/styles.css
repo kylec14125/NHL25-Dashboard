@@ -37,7 +37,7 @@ nav ul li a:focus {
 }
 
 main {
-width: 100%;
+width: 150%;
   max-width: 1200px; /* keep max width for readability */
   margin: 2rem auto;
   padding: 2rem;
