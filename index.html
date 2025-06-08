@@ -232,9 +232,7 @@
     const chip = document.createElement('div');
     chip.classList.add('chip');
     chip.setAttribute('draggable', true);
-    chip.dataset.index = index;
     chip.dataset.group = group;
-    chip.ondragstart = e => e.dataTransfer.setData('text/plain', JSON.stringify({ index, group }));
     chip.innerHTML = player ? `
       <strong>${player.name}</strong><br>
       ${player.position}, Age: ${player.age}<br>
@@ -242,6 +240,10 @@
       Contract: ${player.contract}
     ` : 'Player Needed';
     if (!player) chip.classList.add('placeholder');
+    chip.ondragstart = e => {
+      const playerName = player ? player.name : '';
+      e.dataTransfer.setData('text/plain', JSON.stringify({ name: playerName }));
+    };
     return chip;
   }
 
@@ -279,6 +281,7 @@
     else box.classList.add('chem-neutral');
   }
 
+  // 🚀 Updated Drag-and-Drop Logic!
   function enableGlobalDragAndDrop() {
     const chips = document.querySelectorAll('.chip');
     chips.forEach(chip => {
@@ -286,14 +289,16 @@
       chip.addEventListener('drop', e => {
         e.preventDefault();
         const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-        if (!data || data.group !== chip.dataset.group) return;
-        const draggedIndex = data.index;
-        const targetIndex = chip.dataset.index;
-        const groupList = data.group === 'forwards' ? players.filter(p => ['LW', 'C', 'RW'].includes(p.position)) :
-                          data.group === 'defense' ? players.filter(p => ['LD', 'RD'].includes(p.position)) :
-                          players.filter(p => p.position === 'G');
-        if (draggedIndex !== targetIndex) {
-          [groupList[draggedIndex], groupList[targetIndex]] = [groupList[targetIndex], groupList[draggedIndex]];
+        const draggedName = data.name;
+        const targetName = chip.querySelector('strong')?.textContent;
+
+        if (!draggedName || !targetName || draggedName === targetName) return;
+
+        const draggedIndex = players.findIndex(p => p.name === draggedName);
+        const targetIndex = players.findIndex(p => p.name === targetName);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
           buildLineups();
         }
       });
