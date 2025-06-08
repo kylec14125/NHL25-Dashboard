@@ -170,16 +170,22 @@
     defense.innerHTML = '';
     goalies.innerHTML = '';
 
-    players.forEach((player, index) => {
-      const chip = createChip(player, index);
-      if (['LW', 'C', 'RW'].includes(player.position)) {
-        forwards.appendChild(chip);
-      } else if (['LD', 'RD'].includes(player.position)) {
-        defense.appendChild(chip);
-      } else if (player.position === 'G') {
-        goalies.appendChild(chip);
-      }
-    });
+    if (players.length > 0) {
+      players.forEach((player, index) => {
+        const chip = createChip(player, index);
+        if (['LW', 'C', 'RW'].includes(player.position)) {
+          forwards.appendChild(chip);
+        } else if (['LD', 'RD'].includes(player.position)) {
+          defense.appendChild(chip);
+        } else if (player.position === 'G') {
+          goalies.appendChild(chip);
+        }
+      });
+    } else {
+      for (let i = 0; i < 12; i++) forwards.appendChild(createChip(null, -1));
+      for (let i = 0; i < 6; i++) defense.appendChild(createChip(null, -1));
+      for (let i = 0; i < 2; i++) goalies.appendChild(createChip(null, -1));
+    }
 
     enableGlobalDragAndDrop();
   }
