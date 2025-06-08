@@ -1,329 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kyle's AI Assistant</title>
-  <style>
-    body {
-      background: linear-gradient(135deg, #001628, #005979);
-      color: #fff;
-      font-family: Helvetica, Arial, sans-serif;
-      margin: 0;
-    }
-    header {
-      background: #005979;
-      padding: 20px;
-      text-align: center;
-      position: relative;
-    }
-    header img {
-      position: absolute; top: 15px; left: 15px;
-      width: 50px; height: auto;
-    }
-    h1 { margin: 0; font-size: 2rem; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kyle's AI Assistant</title>
+<style>
+  body {
+    background: linear-gradient(135deg, #001628, #005979);
+    color: #ffffff;
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 0;
+  }
+  header { background-color: #005979; padding: 20px; text-align: center; position: relative; }
+  h1 { margin: 0; color: #ffffff; font-size: 2rem; }
+  header img { width: 50px; height: auto; position: absolute; top: 15px; left: 15px; }
 
-    .tabs {
-      display: flex; max-width: 300px; margin: 20px auto;
-      background: #012d40; border-radius: 25px; overflow: hidden;
-    }
-    .tab {
-      flex: 1; text-align: center; padding: 10px;
-      cursor: pointer; transition: .3s;
-      background: #012d40; color: #888;
-    }
-    .tab.active { background: #005979; color: #fff; }
+  .tabs { display: flex; justify-content: center; background-color: #012d40; border-radius: 25px; margin: 20px auto; max-width: 300px; overflow: hidden; }
+  .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; background-color: #012d40; border-radius: 25px; transition: background-color 0.3s, color 0.3s; }
+  .tab.active { background-color: #005979; color: #ffffff; }
 
-    .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
-    .content.active { display: block; }
+  .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
+  .content.active { display: block; }
 
-    table {
-      width: 100%; border-collapse: collapse;
-      background: #012d40; margin-top: 10px;
-    }
-    th, td {
-      padding: 8px; border: 1px solid #005979;
-      color: #fff; text-align: left;
-    }
-    th { background: #005979; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
+  th, td { padding: 10px; border: 1px solid #005979; }
+  th { background-color: #005979; }
 
-    /* Lineups */
-    .lineups-container h3 { margin-top: 30px; }
-    .forwards-row, .defense-row {
-      display: grid; font-weight: bold; margin-bottom: 5px;
-    }
-    .forwards-row { grid-template-columns: repeat(3,1fr) 50px; }
-    .defense-row  { grid-template-columns: repeat(2,1fr) 50px; }
+  .lineups-container .forwards-row,
+  .lineups-container .forwards-line {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) 50px;
+    gap: 15px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
 
-    .forwards-line, .defense-line {
-      display: grid; gap: 15px; margin-bottom: 15px;
-    }
-    .forwards-line { grid-template-columns: repeat(3,1fr) 50px; }
-    .defense-line  { grid-template-columns: repeat(2,1fr) 50px; }
+  .lineups-container .defense-row,
+  .lineups-container .defense-line {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) 50px;
+    gap: 15px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
 
-    .slot, .chip {
-      background: #005979; border-radius: 5px;
-      min-height: 80px; display: flex;
-      align-items: center; justify-content: center;
-      text-align: center; padding: 5px;
-    }
-    .chip.placeholder { background: #e03a3e; }
-    .chip { cursor: grab; }
-    .chem-box {
-      width: 50px; height: 80px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      font-weight: bold; border-radius: 5px;
-    }
-    .chem-positive { background: #008000; }
-    .chem-neutral  { background: #999; }
-    .chem-negative { background: #e03a3e; }
-    .chem-controls {
-      display: flex; flex-direction: column; gap: 2px; margin-top: 4px;
-    }
-    .chem-controls button {
-      font-size: 0.7rem; padding: 2px;
-      background: #666; color: #fff; border: none; border-radius: 3px;
-      cursor: pointer;
-    }
+  .lineups-container .header-row div,
+  .lineups-container .line .chip,
+  .lineups-container .line .chem-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    /* Salary tables */
-    .salary-table { margin-top: 20px; }
-    .salary-table h3 { margin-bottom: 5px; }
-  </style>
+  .lineups-container .chip {
+    background-color: #005979;
+    border: 1px solid #012d40;
+    min-height: 80px;
+    flex-direction: column;
+    text-align: center;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    padding: 5px;
+  }
+  .lineups-container .chip.placeholder { background-color: #e03a3e; }
+  .lineups-container .chem-box {
+    width: 50px;
+    height: 80px;
+    flex-direction: column;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+  .lineups-container .chem-positive { background-color: #008000; }
+  .lineups-container .chem-neutral { background-color: #999999; }
+  .lineups-container .chem-negative { background-color: #e03a3e; }
+  .lineups-container .chem-controls { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .lineups-container .chem-controls button { font-size: 0.7rem; padding: 2px; }
+</style>
 </head>
 <body>
 
-  <header>
-    <img src="https://www.sportslogos.net/logos/65/6528/full/seattle_kraken_primary_logo_2021_sportslogosnet-1736.png" alt="Kraken Logo"/>
-    <h1>Kyle's AI Assistant</h1>
-  </header>
+<header>
+  <img src="https://www.sportslogos.net/logos/65/6528/full/seattle_kraken_primary_logo_2021_sportslogosnet-1736.png" alt="Kraken Logo" />
+  <h1>Kyle's AI Assistant</h1>
+</header>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('players')">Player Database</div>
-    <div class="tab" onclick="showTab('lineups')">Lineups</div>
-    <div class="tab" onclick="showTab('salary')">Salary</div>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('players')">Player Database</div>
+  <div class="tab" onclick="showTab('lineups')">Lineups</div>
+</div>
+
+<div id="players" class="content active">
+  <h2>Upload Player Data (JSON)</h2>
+  <input type="file" id="dataFile" />
+  <button onclick="loadData()">Load Data</button>
+
+  <h2>Player Stats</h2>
+  <table id="playerTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Age</th>
+        <th>Overall</th>
+        <th>Contract</th>
+        <th>Potential</th>
+        <th>Projected Salary</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="lineups" class="content">
+  <div class="lineups-container">
+    <h2>Lineups</h2>
+
+    <h3>Forwards</h3>
+    <div class="forwards-row"><div>LW</div><div>C</div><div>RW</div><div>Chem</div></div>
+    <div id="forwards"></div>
+
+    <h3>Defense</h3>
+    <div class="defense-row"><div>LD</div><div>RD</div><div>Chem</div></div>
+    <div id="defense"></div>
+
+    <h3>Goalies</h3>
+    <div id="goalies" class="line"></div>
   </div>
-
-  <!-- PLAYER DATABASE -->
-  <div id="players" class="content active">
-    <h2>Upload Player Data (JSON)</h2>
-    <input type="file" id="dataFile"/>
-    <button onclick="loadData()">Load Data</button>
-
-    <h2>Player Stats</h2>
-    <table id="playerTable">
-      <thead>
-        <tr>
-          <th>Name</th><th>Position</th><th>Age</th><th>Overall</th>
-          <th>Contract</th><th>Potential</th><th>Projected Salary</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- LINEUPS -->
-  <div id="lineups" class="content">
-    <div class="lineups-container">
-      <h2>Lineups</h2>
-
-      <h3>Forwards</h3>
-      <div class="forwards-row"><div>LW</div><div>C</div><div>RW</div><div>Chem</div></div>
-      <div id="forwards"></div>
-
-      <h3>Defense</h3>
-      <div class="defense-row"><div>LD</div><div>RD</div><div>Chem</div></div>
-      <div id="defense"></div>
-
-      <h3>Goalies</h3>
-      <div id="goalies" class="line"></div>
-    </div>
-  </div>
-
-  <!-- SALARY -->
-  <div id="salary" class="content">
-    <h2>Salary Analysis</h2>
-    <div id="salaryContent"></div>
-  </div>
+</div>
 
 <script>
-  let players = [], initialized = false, chemValues = { forwards:[0,0,0,0], defense:[0,0,0] };
+let players = [];
+let initialized = false;
+let chemValues = { forwards: [0, 0, 0, 0], defense: [0, 0, 0] };
 
-  function showTab(tabId) {
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
-    document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-    if(tabId==='players') buildPlayerTable();
-    if(tabId==='lineups' && !initialized){ buildLineups(); initialized=true; }
-    if(tabId==='salary') buildSalaryTables();
+function showTab(tabId) {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+  if (tabId === 'lineups' && !initialized) {
+    buildLineups();
+    initialized = true;
   }
+}
 
-  function loadData() {
-    const f = document.getElementById('dataFile').files[0];
-    if(!f) return alert('Please select a file!');
-    const r = new FileReader();
-    r.onload = e=>{
+function loadData() {
+  const fileInput = document.getElementById('dataFile');
+  const file = fileInput.files[0];
+  if (!file) { alert('Please select a file!'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
       players = JSON.parse(e.target.result);
       displayData(players);
       buildLineups();
-    };
-    r.readAsText(f);
-  }
-
-  // PLAYER TABLE
-  function displayData(players){
-    const tb = document.querySelector('#playerTable tbody');
-    tb.innerHTML = '';
-    players.forEach(p=>{
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${p.name}</td>
-        <td>${p.position}</td>
-        <td>${p.age}</td>
-        <td>${p.overall}</td>
-        <td>${p.contract}</td>
-        <td>${p.potential}</td>
-        <td>${projectSalary(p, p.position==='G')}<\/td>
-      `;
-      tb.appendChild(row);
-    });
-  }
-
-  // LINEUPS (exactly your final)
-  function buildLineups(){
-    const fC=document.getElementById('forwards'),
-          dC=document.getElementById('defense'),
-          gC=document.getElementById('goalies');
-    fC.innerHTML=''; dC.innerHTML=''; gC.innerHTML='';
-
-    const fList=players.filter(p=>['LW','C','RW'].includes(p.position)),
-          dList=players.filter(p=>['LD','RD'].includes(p.position)),
-          gList=players.filter(p=>p.position==='G');
-
-    let fi=0;
-    for(let i=0;i<4;i++){
-      const line=document.createElement('div'); line.classList.add('forwards-line');
-      ['LW','C','RW'].forEach(pos=>{
-        const slot=document.createElement('div'); slot.classList.add('slot');
-        const p=fList.find((x,idx)=>!x._placed&&x.position===pos&&(x._placed=true, true));
-        slot.appendChild(makeChip(p)); line.appendChild(slot);
-      });
-      line.appendChild(createChemBox('forwards',i)); fC.appendChild(line);
+    } catch (err) {
+      alert('Error reading file: ' + err.message);
     }
-    fList.forEach(x=>delete x._placed);
+  };
+  reader.readAsText(file);
+}
 
-    for(let i=0;i<3;i++){
-      const line=document.createElement('div'); line.classList.add('defense-line');
-      ['LD','RD'].forEach(pos=>{
-        const slot=document.createElement('div'); slot.classList.add('slot');
-        const p=dList.find((x,idx)=>!x._placed&&x.position===pos&&(x._placed=true, true));
-        slot.appendChild(makeChip(p)); line.appendChild(slot);
-      });
-      line.appendChild(createChemBox('defense',i)); dC.appendChild(line);
+function displayData(players) {
+  const tableBody = document.querySelector('#playerTable tbody');
+  tableBody.innerHTML = '';
+  players.forEach(player => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${player.name}</td>
+      <td>${player.position}</td>
+      <td>${player.age}</td>
+      <td>${player.overall}</td>
+      <td>${player.contract}</td>
+      <td>${player.potential}</td>
+      <td>${projectSalary(player)}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function projectSalary(player) {
+  const base = 1000000;
+  const multiplier = 50000;
+  const projected = base + (player.overall * multiplier);
+  return `$${(projected / 1000000).toFixed(2)}M`;
+}
+
+function buildLineups() {
+  const forwards = document.getElementById('forwards');
+  const defense = document.getElementById('defense');
+  const goalies = document.getElementById('goalies');
+
+  forwards.innerHTML = '';
+  defense.innerHTML = '';
+  goalies.innerHTML = '';
+
+  const forwardsList = players.filter(p => ['LW', 'C', 'RW'].includes(p.position));
+  const defenseList = players.filter(p => ['LD', 'RD'].includes(p.position));
+  const goaliesList = players.filter(p => p.position === 'G');
+
+  let fIndex = 0;
+  for (let i = 0; i < 4; i++) {
+    const line = document.createElement('div');
+    line.classList.add('line', 'forwards-line');
+    for (let j = 0; j < 3; j++) {
+      const player = forwardsList[fIndex] || null;
+      const chip = createChip(player, fIndex, 'forwards');
+      line.appendChild(chip);
+      fIndex++;
     }
-    dList.forEach(x=>delete x._placed);
-
-    gList.forEach(p=>gC.appendChild(makeChip(p)));
-    enableGlobalDragAndDrop();
+    line.appendChild(createChemBox('forwards', i));
+    forwards.appendChild(line);
   }
 
-  function makeChip(player){
-    const chip=document.createElement('div');
-    chip.classList.add('chip');
-    if(!player) chip.classList.add('placeholder');
-    chip.draggable=true;
-    chip.innerHTML=player?`<strong>${player.name}</strong><br>${player.position}, Age:${player.age}`:'Player Needed';
-    chip.ondragstart=e=>e.dataTransfer.setData('text', player?player.name:'');
-    return chip;
+  let dIndex = 0;
+  for (let i = 0; i < 3; i++) {
+    const line = document.createElement('div');
+    line.classList.add('line', 'defense-line');
+    for (let j = 0; j < 2; j++) {
+      const player = defenseList[dIndex] || null;
+      const chip = createChip(player, dIndex, 'defense');
+      line.appendChild(chip);
+      dIndex++;
+    }
+    line.appendChild(createChemBox('defense', i));
+    defense.appendChild(line);
   }
 
-  function createChemBox(type,i){
-    const box=document.createElement('div'); box.classList.add('chem-box');
-    updateChemColor(box, chemValues[type][i]);
-    box.textContent=chemValues[type][i];
-    const ctrls=document.createElement('div'); ctrls.classList.add('chem-controls');
-    ['+','–'].forEach(sym=>{
-      const b=document.createElement('button'); b.textContent=sym;
-      b.onclick=()=>{
-        chemValues[type][i]=Math.max(-5,Math.min(5,chemValues[type][i]+(sym==='+'?1:-1)));
-        box.firstChild.textContent=chemValues[type][i];
-        updateChemColor(box, chemValues[type][i]);
-      };
-      ctrls.appendChild(b);
-    });
-    box.appendChild(ctrls);
-    return box;
+  for (let i = 0; i < 2; i++) {
+    const chip = createChip(goaliesList[i] || null, i, 'goalies');
+    goalies.appendChild(chip);
   }
 
-  function updateChemColor(box,v){
-    box.classList.remove('chem-positive','chem-neutral','chem-negative');
-    box.classList.add(v>0?'chem-positive':v<0?'chem-negative':'chem-neutral');
-  }
+  enableGlobalDragAndDrop();
+}
 
-  function enableGlobalDragAndDrop(){
-    document.querySelectorAll('.chip').forEach(chip=>{
-      chip.addEventListener('dragover',e=>e.preventDefault());
-      chip.addEventListener('drop',e=>{
-        e.preventDefault();
-        const srcName = e.dataTransfer.getData('text'),
-              tgtName = chip.querySelector('strong')?.textContent;
-        if(!srcName||!tgtName||srcName===tgtName) return;
-        const si=players.findIndex(p=>p.name===srcName),
-              ti=players.findIndex(p=>p.name===tgtName);
-        [players[si],players[ti]]=[players[ti],players[si]];
+function createChip(player, index, group) {
+  const chip = document.createElement('div');
+  chip.classList.add('chip');
+  chip.setAttribute('draggable', true);
+  chip.dataset.group = group;
+  chip.innerHTML = player ? `
+    <strong>${player.name}</strong><br>
+    ${player.position}, Age: ${player.age}<br>
+    Potential: ${player.potential}<br>
+    Contract: ${player.contract}
+  ` : 'Player Needed';
+  if (!player) chip.classList.add('placeholder');
+  chip.ondragstart = e => {
+    const playerName = player ? player.name : '';
+    e.dataTransfer.setData('text/plain', JSON.stringify({ name: playerName }));
+  };
+  return chip;
+}
+
+function createChemBox(type, index) {
+  const chemBox = document.createElement('div');
+  chemBox.classList.add('chem-box');
+  updateChemColor(chemBox, chemValues[type][index]);
+  chemBox.innerHTML = chemValues[type][index];
+
+  const controls = document.createElement('div');
+  controls.classList.add('chem-controls');
+  const inc = document.createElement('button');
+  inc.textContent = '+';
+  inc.onclick = () => adjustChem(type, index, 1, chemBox);
+  const dec = document.createElement('button');
+  dec.textContent = '–';
+  dec.onclick = () => adjustChem(type, index, -1, chemBox);
+  controls.appendChild(inc);
+  controls.appendChild(dec);
+
+  chemBox.appendChild(controls);
+  return chemBox;
+}
+
+function adjustChem(type, index, delta, box) {
+  chemValues[type][index] = Math.max(-5, Math.min(5, chemValues[type][index] + delta));
+  box.firstChild.textContent = chemValues[type][index];
+  updateChemColor(box, chemValues[type][index]);
+}
+
+function updateChemColor(box, value) {
+  box.classList.remove('chem-positive', 'chem-neutral', 'chem-negative');
+  if (value > 0) box.classList.add('chem-positive');
+  else if (value < 0) box.classList.add('chem-negative');
+  else box.classList.add('chem-neutral');
+}
+
+function enableGlobalDragAndDrop() {
+  const chips = document.querySelectorAll('.chip');
+  chips.forEach(chip => {
+    chip.addEventListener('dragover', e => e.preventDefault());
+    chip.addEventListener('drop', e => {
+      e.preventDefault();
+      const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      const draggedName = data.name;
+      const targetName = chip.querySelector('strong')?.textContent;
+
+      if (!draggedName || !targetName || draggedName === targetName) return;
+
+      const draggedIndex = players.findIndex(p => p.name === draggedName);
+      const targetIndex = players.findIndex(p => p.name === targetName);
+
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
         buildLineups();
-      });
+      }
     });
-  }
+  });
+}
 
-  // SALARY
-  function buildSalaryTables(){
-    const sc=document.getElementById('salaryContent'); sc.innerHTML='';
-    const groups=[
-      {t:'Forwards',list:players.filter(p=>['LW','C','RW'].includes(p.position))},
-      {t:'Defense', list:players.filter(p=>['LD','RD'].includes(p.position))},
-      {t:'Goalies', list:players.filter(p=>p.position==='G')}
-    ];
-    groups.forEach(g=>{
-      const cont=document.createElement('div'); cont.classList.add('salary-table');
-      cont.innerHTML=`<h3>${g.t}</h3>`;
-      const tbl=document.createElement('table'),
-            hdr=document.createElement('tr');
-      if(g.t==='Goalies') hdr.innerHTML=
-        `<th>Name</th><th>Age</th><th>Contract</th><th>GAA</th><th>SV%</th><th>Proj $</th><th>Status</th>`;
-      else hdr.innerHTML=
-        `<th>Name</th><th>Age</th><th>Contract</th><th>Goals</th><th>Assists</th><th>Points</th><th>Proj $</th><th>Status</th>`;
-      tbl.appendChild(hdr);
-      g.list.sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
-        const row=document.createElement('tr'),
-              proj=projectSalary(p, g.t==='Goalies'),
-              cur=parseFloat(p.contract.split('M')[0].replace('$','')),
-              st=proj>cur?'Underpaid':proj<cur?'Overpaid':'Fair';
-        if(g.t==='Goalies'){
-          row.innerHTML=
-            `<td>${p.name}</td><td>${p.age}</td><td>${p.contract}</td><td>${p.gaa}</td><td>${p.savePct}</td><td>$${proj.toFixed(1)}M</td><td>${st}</td>`;
-        } else {
-          row.innerHTML=
-            `<td>${p.name}</td><td>${p.age}</td><td>${p.contract}</td><td>${p.goals}</td><td>${p.assists}</td><td>${p.points}</td><td>$${proj.toFixed(1)}M</td><td>${st}</td>`;
-        }
-        tbl.appendChild(row);
-      });
-      cont.appendChild(tbl);
-      sc.appendChild(cont);
-    });
-  }
-
-  function projectSalary(p,isG){
-    let v = isG
-      ? 3 + 0.02*(p.savePct*100) - 0.1*p.gaa
-      : 0.13*p.points;
-    if(p.age<26) v*=1.1;
-    if(p.age>32) v*=0.9;
-    if(/(Elite|Franchise)/.test(p.potential)) v*=1.1;
-    return v;
-  }
+buildLineups();
 </script>
 </body>
 </html>
