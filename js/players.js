@@ -36,12 +36,16 @@ document.addEventListener('DOMContentLoaded', () => {
       row.innerHTML = `
         <td>${player['Player Name']}</td>
         <td>${player['Age']}</td>
+        <td>${player['Play Type']}</td>
         <td>${player['Position']}</td>
         <td>${player['Overall']}</td>
         <td>${player['Potential']}</td>
         <td>${player['Goals']}</td>
         <td>${player['Assists']}</td>
         <td>${player['Points']}</td>
+        <td>${player['Plus Minus']}</td>
+        <td>${player['Contract Amount']}</td>
+        <td>${player['Contact Years']}</td>
       `;
 
       // Highlight top performers (Points ≥ 10)
