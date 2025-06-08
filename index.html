@@ -14,26 +14,18 @@
   .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
   .content.active { display: block; }
 
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
-  th, td { padding: 10px; border: 1px solid #005979; }
-  th { background-color: #005979; }
-
-  .button { background-color: #e03a3e; color: #fff; border: none; padding: 10px 15px; cursor: pointer; margin-top: 10px; }
-  .button:hover { background-color: #c22e2e; }
-
-  .line { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) auto; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .line { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .chip {
     background-color: #005979;
     border: 1px solid #012d40;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: move;
+    flex: 1;
     min-height: 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
     font-size: 0.9rem;
+    border-radius: 5px;
   }
   .chip.placeholder { background-color: #e03a3e; }
   .chem-box {
@@ -67,7 +59,7 @@
 <div id="players" class="content active">
   <h2>Upload Player Data (JSON)</h2>
   <input type="file" id="dataFile" />
-  <button class="button" onclick="loadData()">Load Data</button>
+  <button onclick="loadData()">Load Data</button>
 
   <h2>Player Stats</h2>
   <table id="playerTable">
@@ -87,7 +79,6 @@
 
 <div id="lineups" class="content">
   <h2>Lineups</h2>
-
   <h3>Forwards</h3>
   <div id="forwards"></div>
 
@@ -95,13 +86,13 @@
   <div id="defense"></div>
 
   <h3>Goalies</h3>
-  <div id="goalies"></div>
+  <div id="goalies" class="line"></div>
 </div>
 
 <script>
   let players = [];
   let initialized = false;
-  let chemValues = { forwards: [0,0,0,0], defense: [0,0,0] };
+  let chemValues = { forwards: [0, 0, 0, 0], defense: [0, 0, 0] };
 
   function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
