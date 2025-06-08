@@ -11,7 +11,7 @@
   .tabs { display: flex; background-color: #012d40; }
   .tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; background-color: #012d40; }
   .tab.active { background-color: #005979; }
-  .content { display: none; padding: 20px; }
+  .content { display: none; padding: 20px; max-width: 1200px; margin: auto; }
   .content.active { display: block; }
 
   table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
@@ -28,7 +28,7 @@
     padding: 10px;
     border-radius: 5px;
     cursor: move;
-    width: 120px;
+    width: 150px;
     text-align: center;
     min-height: 70px;
     display: flex;
@@ -36,27 +36,16 @@
     justify-content: center;
   }
   .chip.placeholder { background-color: #e03a3e; }
-  .chemistry {
-    background-color: #012d40;
-    color: #fff;
-    border: 1px solid #005979;
-    padding: 5px;
-    border-radius: 3px;
-    width: 60px;
-  }
   .position-header {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-around;
     gap: 10px;
     margin-bottom: 5px;
     font-weight: bold;
   }
   .position-header div {
-    width: 120px;
+    flex: 1;
     text-align: center;
-  }
-  .position-header div:last-child {
-    width: 60px;
   }
 </style>
 </head>
@@ -100,7 +89,6 @@
     <div>LW</div>
     <div>C</div>
     <div>RW</div>
-    <div>Chem</div>
   </div>
   <div id="forwards"></div>
 
@@ -108,7 +96,6 @@
   <div class="position-header">
     <div>LD</div>
     <div>RD</div>
-    <div>Chem</div>
   </div>
   <div id="defense"></div>
 
@@ -190,8 +177,6 @@
         if (player) usedPlayers.push(player);
         line.appendChild(createChip(player, players.indexOf(player)));
       });
-      const chemSelect = createChemistryDropdown();
-      line.appendChild(chemSelect);
       forwards.appendChild(line);
     }
 
@@ -204,8 +189,6 @@
         if (player) usedPlayers.push(player);
         line.appendChild(createChip(player, players.indexOf(player)));
       });
-      const chemSelect = createChemistryDropdown();
-      line.appendChild(chemSelect);
       defense.appendChild(line);
     }
 
@@ -216,7 +199,7 @@
       goalies.appendChild(createChip(player, players.indexOf(player)));
     }
 
-    enableDragAndDrop();
+    enableGlobalDragAndDrop();
   }
 
   function createChip(player, index) {
@@ -239,27 +222,17 @@
     return chip;
   }
 
-  function createChemistryDropdown() {
-    const select = document.createElement('select');
-    select.classList.add('chemistry');
-    for (let i = -5; i <= 5; i++) {
-      const option = document.createElement('option');
-      option.value = i;
-      option.textContent = i;
-      select.appendChild(option);
-    }
-    return select;
-  }
-
-  function enableDragAndDrop() {
-    document.querySelectorAll('.line').forEach(line => {
-      let dragged;
-      line.addEventListener('dragstart', e => dragged = e.target);
-      line.addEventListener('dragover', e => e.preventDefault());
-      line.addEventListener('drop', e => {
+  function enableGlobalDragAndDrop() {
+    const chips = document.querySelectorAll('.chip');
+    chips.forEach(chip => {
+      chip.addEventListener('dragover', e => e.preventDefault());
+      chip.addEventListener('drop', e => {
         e.preventDefault();
-        if (dragged && e.target.classList.contains('chip') && dragged !== e.target) {
-          line.insertBefore(dragged, e.target.nextSibling);
+        const draggedIndex = e.dataTransfer.getData('text/plain');
+        const targetIndex = chip.dataset.index;
+        if (draggedIndex && targetIndex && draggedIndex !== targetIndex) {
+          [players[draggedIndex], players[targetIndex]] = [players[targetIndex], players[draggedIndex]];
+          buildLineups();
         }
       });
     });
