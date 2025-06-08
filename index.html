@@ -14,17 +14,24 @@
   .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
   .content.active { display: block; }
 
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #012d40; }
-  th, td { padding: 10px; border: 1px solid #005979; }
-  th { background-color: #005979; }
-
-  .lineups-container .header-row,
-  .lineups-container .line {
+  .lineups-container .forwards-row,
+  .lineups-container .forwards-line {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 50px;
+    grid-template-columns: repeat(3, 1fr) 50px;
     gap: 10px;
-    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
   }
+
+  .lineups-container .defense-row,
+  .lineups-container .defense-line {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr) 50px;
+    gap: 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+
   .lineups-container .header-row div,
   .lineups-container .line .chip,
   .lineups-container .line .chem-box {
@@ -32,7 +39,6 @@
     justify-content: center;
     align-items: center;
   }
-  .lineups-container .header-row { font-weight: bold; }
   .lineups-container .chip {
     background-color: #005979;
     border: 1px solid #012d40;
@@ -95,11 +101,11 @@
     <h2>Lineups</h2>
 
     <h3>Forwards</h3>
-    <div class="header-row"><div>LW</div><div>C</div><div>RW</div><div>Chem</div></div>
+    <div class="forwards-row"><div>LW</div><div>C</div><div>RW</div><div>Chem</div></div>
     <div id="forwards"></div>
 
     <h3>Defense</h3>
-    <div class="header-row"><div>LD</div><div>RD</div><div>Chem</div></div>
+    <div class="defense-row"><div>LD</div><div>RD</div><div>Chem</div></div>
     <div id="defense"></div>
 
     <h3>Goalies</h3>
@@ -181,7 +187,7 @@
     let fIndex = 0;
     for (let i = 0; i < 4; i++) {
       const line = document.createElement('div');
-      line.classList.add('line');
+      line.classList.add('line', 'forwards-line');
       for (let j = 0; j < 3; j++) {
         const player = forwardsList[fIndex] || null;
         const chip = createChip(player, fIndex, 'forwards');
@@ -195,7 +201,7 @@
     let dIndex = 0;
     for (let i = 0; i < 3; i++) {
       const line = document.createElement('div');
-      line.classList.add('line');
+      line.classList.add('line', 'defense-line');
       for (let j = 0; j < 2; j++) {
         const player = defenseList[dIndex] || null;
         const chip = createChip(player, dIndex, 'defense');
