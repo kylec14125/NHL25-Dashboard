@@ -30,6 +30,10 @@
     cursor: move;
     width: 120px;
     text-align: center;
+    min-height: 70px; /* consistent height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .chip.placeholder { background-color: #e03a3e; }
   .chemistry {
@@ -165,16 +169,18 @@
     goalies.innerHTML = '';
 
     // Categorize players
+    let usedPlayers = [];
     const fwdPlayers = players.filter(p => ['LW', 'C', 'RW'].includes(p.position));
     const dPlayers = players.filter(p => ['LD', 'RD'].includes(p.position));
     const gPlayers = players.filter(p => p.position === 'G');
 
-    // Build forwards (Lines 1–4)
+    // Forwards (Lines 1–4)
     for (let i = 0; i < 4; i++) {
       const line = document.createElement('div');
       line.classList.add('line');
       ['LW', 'C', 'RW'].forEach(pos => {
-        const player = fwdPlayers.find(p => p.position === pos) || null;
+        const player = fwdPlayers.find(p => p.position === pos && !usedPlayers.includes(p)) || null;
+        if (player) usedPlayers.push(player);
         line.appendChild(createChip(player, players.indexOf(player)));
       });
       const chemSelect = createChemistryDropdown();
@@ -182,12 +188,13 @@
       forwards.appendChild(line);
     }
 
-    // Build defense (Lines 1–3)
+    // Defense (Lines 1–3)
     for (let i = 0; i < 3; i++) {
       const line = document.createElement('div');
       line.classList.add('line');
       ['LD', 'RD'].forEach(pos => {
-        const player = dPlayers.find(p => p.position === pos) || null;
+        const player = dPlayers.find(p => p.position === pos && !usedPlayers.includes(p)) || null;
+        if (player) usedPlayers.push(player);
         line.appendChild(createChip(player, players.indexOf(player)));
       });
       const chemSelect = createChemistryDropdown();
@@ -195,9 +202,10 @@
       defense.appendChild(line);
     }
 
-    // Build goalies
+    // Goalies (2 slots)
     for (let i = 0; i < 2; i++) {
-      const player = gPlayers[i] || null;
+      const player = gPlayers.find(p => !usedPlayers.includes(p)) || null;
+      if (player) usedPlayers.push(player);
       goalies.appendChild(createChip(player, players.indexOf(player)));
     }
 
