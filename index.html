@@ -24,7 +24,7 @@
     h1 { margin: 0; font-size: 2rem; }
 
     .tabs {
-      display: flex; max-width: 500px; margin: 20px auto;
+      display: flex; max-width: 300px; margin: 20px auto;
       background: #012d40; border-radius: 25px; overflow: hidden;
     }
     .tab {
@@ -34,7 +34,7 @@
     }
     .tab.active { background: #005979; color: #fff; }
 
-    .content { display: none; padding: 20px; max-width: 1200px; margin: auto; }
+    .content { display: none; padding: 20px; max-width: 1400px; margin: auto; }
     .content.active { display: block; }
 
     table {
@@ -52,14 +52,14 @@
     .forwards-row, .defense-row {
       display: grid; font-weight: bold; margin-bottom: 5px;
     }
-    .forwards-row { grid-template-columns: 1fr 1fr 1fr 50px; }
-    .defense-row  { grid-template-columns: 1fr 1fr 50px; }
+    .forwards-row { grid-template-columns: repeat(3,1fr) 50px; }
+    .defense-row  { grid-template-columns: repeat(2,1fr) 50px; }
 
     .forwards-line, .defense-line {
-      display: grid; grid-gap: 15px; margin-bottom: 15px;
+      display: grid; gap: 15px; margin-bottom: 15px;
     }
-    .forwards-line { grid-template-columns: 1fr 1fr 1fr 50px; }
-    .defense-line  { grid-template-columns: 1fr 1fr 50px; }
+    .forwards-line { grid-template-columns: repeat(3,1fr) 50px; }
+    .defense-line  { grid-template-columns: repeat(2,1fr) 50px; }
 
     .slot, .chip {
       background: #005979; border-radius: 5px;
@@ -67,19 +67,29 @@
       align-items: center; justify-content: center;
       text-align: center; padding: 5px;
     }
-    .slot.placeholder { background: #e03a3e; }
+    .chip.placeholder { background: #e03a3e; }
     .chip { cursor: grab; }
     .chem-box {
+      width: 50px; height: 80px;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background: #444; border-radius: 5px;
-      color: #fff; font-size: 1rem;
+      font-weight: bold; border-radius: 5px;
     }
-    .chem-box button {
-      background: #666; color: #fff;
-      border: none; padding: 2px 6px; margin: 2px 0;
-      cursor: pointer; border-radius: 3px;
+    .chem-positive { background: #008000; }
+    .chem-neutral  { background: #999; }
+    .chem-negative { background: #e03a3e; }
+    .chem-controls {
+      display: flex; flex-direction: column; gap: 2px; margin-top: 4px;
     }
+    .chem-controls button {
+      font-size: 0.7rem; padding: 2px;
+      background: #666; color: #fff; border: none; border-radius: 3px;
+      cursor: pointer;
+    }
+
+    /* Salary tables */
+    .salary-table { margin-top: 20px; }
+    .salary-table h3 { margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -97,44 +107,37 @@
 
   <!-- PLAYER DATABASE -->
   <div id="players" class="content active">
-    <h2>Player Database</h2>
+    <h2>Upload Player Data (JSON)</h2>
     <input type="file" id="dataFile"/>
     <button onclick="loadData()">Load Data</button>
+
+    <h2>Player Stats</h2>
     <table id="playerTable">
       <thead>
         <tr>
-          <th onclick="sortTable(0)">Name</th>
-          <th onclick="sortTable(1)">Position</th>
-          <th onclick="sortTable(2)">Age</th>
-          <th onclick="sortTable(3)">Contract</th>
-          <th onclick="sortTable(4)">Potential</th>
-          <th onclick="sortTable(5)">Goals</th>
-          <th onclick="sortTable(6)">Assists</th>
-          <th onclick="sortTable(7)">Points</th>
+          <th>Name</th><th>Position</th><th>Age</th><th>Overall</th>
+          <th>Contract</th><th>Potential</th><th>Projected Salary</th>
         </tr>
       </thead>
-      <tbody id="playerTableBody"></tbody>
+      <tbody></tbody>
     </table>
   </div>
 
   <!-- LINEUPS -->
   <div id="lineups" class="content">
-    <h2>Lineups</h2>
     <div class="lineups-container">
+      <h2>Lineups</h2>
+
       <h3>Forwards</h3>
-      <div class="forwards-row">
-        <div>LW</div><div>C</div><div>RW</div><div>Chem</div>
-      </div>
+      <div class="forwards-row"><div>LW</div><div>C</div><div>RW</div><div>Chem</div></div>
       <div id="forwards"></div>
 
       <h3>Defense</h3>
-      <div class="defense-row">
-        <div>LD</div><div>RD</div><div>Chem</div>
-      </div>
+      <div class="defense-row"><div>LD</div><div>RD</div><div>Chem</div></div>
       <div id="defense"></div>
 
       <h3>Goalies</h3>
-      <div id="goalies" class="forwards-line"></div>
+      <div id="goalies" class="line"></div>
     </div>
   </div>
 
@@ -144,204 +147,183 @@
     <div id="salaryContent"></div>
   </div>
 
-  <script>
-    // global players array
-    let players = [];
+<script>
+  let players = [], initialized = false, chemValues = { forwards:[0,0,0,0], defense:[0,0,0] };
 
-    // Tab switching
-    function showTab(tabId) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-      document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-      if (tabId === 'players') buildPlayerTable();
-      if (tabId === 'lineups')  buildLineups();
-      if (tabId === 'salary')   buildSalaryTables();
+  function showTab(tabId) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+    document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    if(tabId==='players') buildPlayerTable();
+    if(tabId==='lineups' && !initialized){ buildLineups(); initialized=true; }
+    if(tabId==='salary') buildSalaryTables();
+  }
+
+  function loadData() {
+    const f = document.getElementById('dataFile').files[0];
+    if(!f) return alert('Please select a file!');
+    const r = new FileReader();
+    r.onload = e=>{
+      players = JSON.parse(e.target.result);
+      displayData(players);
+      buildLineups();
+    };
+    r.readAsText(f);
+  }
+
+  // PLAYER TABLE
+  function displayData(players){
+    const tb = document.querySelector('#playerTable tbody');
+    tb.innerHTML = '';
+    players.forEach(p=>{
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${p.name}</td>
+        <td>${p.position}</td>
+        <td>${p.age}</td>
+        <td>${p.overall}</td>
+        <td>${p.contract}</td>
+        <td>${p.potential}</td>
+        <td>${projectSalary(p, p.position==='G')}<\/td>
+      `;
+      tb.appendChild(row);
+    });
+  }
+
+  // LINEUPS (exactly your final)
+  function buildLineups(){
+    const fC=document.getElementById('forwards'),
+          dC=document.getElementById('defense'),
+          gC=document.getElementById('goalies');
+    fC.innerHTML=''; dC.innerHTML=''; gC.innerHTML='';
+
+    const fList=players.filter(p=>['LW','C','RW'].includes(p.position)),
+          dList=players.filter(p=>['LD','RD'].includes(p.position)),
+          gList=players.filter(p=>p.position==='G');
+
+    let fi=0;
+    for(let i=0;i<4;i++){
+      const line=document.createElement('div'); line.classList.add('forwards-line');
+      ['LW','C','RW'].forEach(pos=>{
+        const slot=document.createElement('div'); slot.classList.add('slot');
+        const p=fList.find((x,idx)=>!x._placed&&x.position===pos&&(x._placed=true, true));
+        slot.appendChild(makeChip(p)); line.appendChild(slot);
+      });
+      line.appendChild(createChemBox('forwards',i)); fC.appendChild(line);
     }
+    fList.forEach(x=>delete x._placed);
 
-    // Load players.json
-    function loadData() {
-      const file = document.getElementById('dataFile').files[0];
-      if (!file) return alert('Select a file');
-      const reader = new FileReader();
-      reader.onload = e => {
-        players = JSON.parse(e.target.result);
-        buildPlayerTable();
-        buildLineups();
+    for(let i=0;i<3;i++){
+      const line=document.createElement('div'); line.classList.add('defense-line');
+      ['LD','RD'].forEach(pos=>{
+        const slot=document.createElement('div'); slot.classList.add('slot');
+        const p=dList.find((x,idx)=>!x._placed&&x.position===pos&&(x._placed=true, true));
+        slot.appendChild(makeChip(p)); line.appendChild(slot);
+      });
+      line.appendChild(createChemBox('defense',i)); dC.appendChild(line);
+    }
+    dList.forEach(x=>delete x._placed);
+
+    gList.forEach(p=>gC.appendChild(makeChip(p)));
+    enableGlobalDragAndDrop();
+  }
+
+  function makeChip(player){
+    const chip=document.createElement('div');
+    chip.classList.add('chip');
+    if(!player) chip.classList.add('placeholder');
+    chip.draggable=true;
+    chip.innerHTML=player?`<strong>${player.name}</strong><br>${player.position}, Age:${player.age}`:'Player Needed';
+    chip.ondragstart=e=>e.dataTransfer.setData('text', player?player.name:'');
+    return chip;
+  }
+
+  function createChemBox(type,i){
+    const box=document.createElement('div'); box.classList.add('chem-box');
+    updateChemColor(box, chemValues[type][i]);
+    box.textContent=chemValues[type][i];
+    const ctrls=document.createElement('div'); ctrls.classList.add('chem-controls');
+    ['+','–'].forEach(sym=>{
+      const b=document.createElement('button'); b.textContent=sym;
+      b.onclick=()=>{
+        chemValues[type][i]=Math.max(-5,Math.min(5,chemValues[type][i]+(sym==='+'?1:-1)));
+        box.firstChild.textContent=chemValues[type][i];
+        updateChemColor(box, chemValues[type][i]);
       };
-      reader.readAsText(file);
-    }
+      ctrls.appendChild(b);
+    });
+    box.appendChild(ctrls);
+    return box;
+  }
 
-    // PLAYER DATABASE
-    function buildPlayerTable() {
-      const tbody = document.getElementById('playerTableBody');
-      tbody.innerHTML = '';
-      players.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${p.name}</td>
-          <td>${p.position}</td>
-          <td>${p.age}</td>
-          <td>${p.contract}</td>
-          <td>${p.potential|| '-'}</td>
-          <td>${p.goals|| '-'}</td>
-          <td>${p.assists|| '-'}</td>
-          <td>${p.points|| '-'}</td>
-        `;
-        tbody.appendChild(tr);
+  function updateChemColor(box,v){
+    box.classList.remove('chem-positive','chem-neutral','chem-negative');
+    box.classList.add(v>0?'chem-positive':v<0?'chem-negative':'chem-neutral');
+  }
+
+  function enableGlobalDragAndDrop(){
+    document.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('dragover',e=>e.preventDefault());
+      chip.addEventListener('drop',e=>{
+        e.preventDefault();
+        const srcName = e.dataTransfer.getData('text'),
+              tgtName = chip.querySelector('strong')?.textContent;
+        if(!srcName||!tgtName||srcName===tgtName) return;
+        const si=players.findIndex(p=>p.name===srcName),
+              ti=players.findIndex(p=>p.name===tgtName);
+        [players[si],players[ti]]=[players[ti],players[si]];
+        buildLineups();
       });
-    }
-    function sortTable(col) {
-      const table = document.getElementById('playerTable');
-      const rows = Array.from(table.rows).slice(1);
-      const sorted = rows.sort((a,b) => {
-        const A = a.cells[col].textContent.trim(), B = b.cells[col].textContent.trim();
-        const numA = parseFloat(A), numB = parseFloat(B);
-        return !isNaN(numA) && !isNaN(numB) ? numA - numB : A.localeCompare(B);
-      });
-      sorted.forEach(r => table.tBodies[0].appendChild(r));
-    }
+    });
+  }
 
-    // LINEUPS
-    let chipId = 0;
-    function buildLineups() {
-      const fC = document.getElementById('forwards');
-      const dC = document.getElementById('defense');
-      const gC = document.getElementById('goalies');
-      fC.innerHTML = ''; dC.innerHTML = ''; gC.innerHTML = '';
-
-      // FORWARDS: 4 lines of 3 + chem
-      const fList = players.filter(p=>['LW','C','RW'].includes(p.position));
-      for (let i=0;i<4;i++){
-        const row = document.createElement('div');
-        row.classList.add('forwards-line');
-        ['LW','C','RW'].forEach(pos=>{
-          const slot = makeSlot();
-          // place player if matches
-          const pl = fList.find(p=>!p._placed && p.position===pos);
-          if(pl){ slot.appendChild(makeChip(pl)); pl._placed = true;}
-          row.appendChild(slot);
-        });
-        row.appendChild(makeChem());
-        fC.appendChild(row);
-      }
-      // clear placed flags
-      fList.forEach(p=>delete p._placed);
-
-      // DEFENSE: 3 lines of 2 + chem
-      const dList = players.filter(p=>['LD','RD'].includes(p.position));
-      for (let i=0;i<3;i++){
-        const row = document.createElement('div');
-        row.classList.add('defense-line');
-        ['LD','RD'].forEach(pos=>{
-          const slot = makeSlot();
-          const pl = dList.find(p=>!p._placed && p.position===pos);
-          if(pl){ slot.appendChild(makeChip(pl)); pl._placed = true;}
-          row.appendChild(slot);
-        });
-        row.appendChild(makeChem());
-        dC.appendChild(row);
-      }
-      dList.forEach(p=>delete p._placed);
-
-      // GOALIES
-      players.filter(p=>p.position==='G').forEach(p=>{
-        gC.appendChild(makeChip(p));
-      });
-    }
-
-    function makeSlot() {
-      const slot = document.createElement('div');
-      slot.classList.add('slot');
-      slot.addEventListener('dragover', e=>e.preventDefault());
-      slot.addEventListener('drop', onDrop);
-      return slot;
-    }
-    function makeChip(p) {
-      const chip = document.createElement('div');
-      chip.classList.add('chip');
-      chip.draggable = true;
-      chip.id = 'chip-'+(chipId++);
-      chip.addEventListener('dragstart', onDrag);
-      chip.innerHTML = p
-        ? `<strong>${p.name}</strong><br>${p.position}, Age:${p.age}`
-        : 'Player Needed';
-      return chip;
-    }
-    function onDrag(e) {
-      e.dataTransfer.setData('text/plain', e.target.id);
-    }
-    function onDrop(e) {
-      const id = e.dataTransfer.getData('text/plain');
-      const dragged = document.getElementById(id);
-      // if slot already has chip, swap
-      const existing = e.target.querySelector('.chip');
-      if (existing) {
-        const orig = dragged.parentElement;
-        orig.appendChild(existing);
-      }
-      e.target.appendChild(dragged);
-    }
-    function makeChem() {
-      const box = document.createElement('div');
-      box.classList.add('chem-box');
-      const display = document.createElement('div');
-      display.textContent = 0;
-      const plus = document.createElement('button');
-      plus.textContent = '+';
-      const minus = document.createElement('button');
-      minus.textContent = '–';
-      plus.onclick = ()=> display.textContent = Math.min(5, +display.textContent+1);
-      minus.onclick= ()=> display.textContent = Math.max(-5,+display.textContent-1);
-      box.append(display, plus, minus);
-      return box;
-    }
-
-    // SALARY (unchanged from final you approved)
-    function buildSalaryTables() {
-      const salaryContent = document.getElementById('salaryContent');
-      salaryContent.innerHTML = '';
-      const groups = [
-        { title:'Forwards', list: players.filter(p=>['LW','C','RW'].includes(p.position)) },
-        { title:'Defense',  list: players.filter(p=>['LD','RD'].includes(p.position)) },
-        { title:'Goalies',  list: players.filter(p=>p.position==='G') }
-      ];
-      groups.forEach(g=>{
-        const tbl = document.createElement('div');
-        tbl.innerHTML = `<h3>${g.title}</h3>`;
-        const t = document.createElement('table');
-        const h = document.createElement('tr');
-        if(g.title==='Goalies') {
-          h.innerHTML = `<th>Name</th><th>Age</th><th>Contract</th><th>GAA</th><th>SV%</th><th>Proj $</th><th>Status</th>`;
+  // SALARY
+  function buildSalaryTables(){
+    const sc=document.getElementById('salaryContent'); sc.innerHTML='';
+    const groups=[
+      {t:'Forwards',list:players.filter(p=>['LW','C','RW'].includes(p.position))},
+      {t:'Defense', list:players.filter(p=>['LD','RD'].includes(p.position))},
+      {t:'Goalies', list:players.filter(p=>p.position==='G')}
+    ];
+    groups.forEach(g=>{
+      const cont=document.createElement('div'); cont.classList.add('salary-table');
+      cont.innerHTML=`<h3>${g.t}</h3>`;
+      const tbl=document.createElement('table'),
+            hdr=document.createElement('tr');
+      if(g.t==='Goalies') hdr.innerHTML=
+        `<th>Name</th><th>Age</th><th>Contract</th><th>GAA</th><th>SV%</th><th>Proj $</th><th>Status</th>`;
+      else hdr.innerHTML=
+        `<th>Name</th><th>Age</th><th>Contract</th><th>Goals</th><th>Assists</th><th>Points</th><th>Proj $</th><th>Status</th>`;
+      tbl.appendChild(hdr);
+      g.list.sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+        const row=document.createElement('tr'),
+              proj=projectSalary(p, g.t==='Goalies'),
+              cur=parseFloat(p.contract.split('M')[0].replace('$','')),
+              st=proj>cur?'Underpaid':proj<cur?'Overpaid':'Fair';
+        if(g.t==='Goalies'){
+          row.innerHTML=
+            `<td>${p.name}</td><td>${p.age}</td><td>${p.contract}</td><td>${p.gaa}</td><td>${p.savePct}</td><td>$${proj.toFixed(1)}M</td><td>${st}</td>`;
         } else {
-          h.innerHTML = `<th>Name</th><th>Age</th><th>Contract</th><th>Goals</th><th>Assists</th><th>Points</th><th>Proj $</th><th>Status</th>`;
+          row.innerHTML=
+            `<td>${p.name}</td><td>${p.age}</td><td>${p.contract}</td><td>${p.goals}</td><td>${p.assists}</td><td>${p.points}</td><td>$${proj.toFixed(1)}M</td><td>${st}</td>`;
         }
-        t.append(h);
-        g.list.sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
-          const row = document.createElement('tr');
-          const proj = projectSalary(p, g.title==='Goalies');
-          const cur = parseFloat(p.contract.split('M')[0].replace('$',''));
-          const status = proj>cur?'Underpaid': proj<cur?'Overpaid':'Fair';
-          if(g.title==='Goalies'){
-            row.innerHTML = `<td>${p.name}</td><td>${p.age}</td><td>${p.contract}</td><td>${p.gaa}</td><td>${p.savePct}</td><td>$${proj.toFixed(1)}M</td><td>${status}</td>`;
-          } else {
-            row.innerHTML = `<td>${p.name}</td><td>${p.age}</td><td>${p.contract}</td><td>${p.goals}</td><td>${p.assists}</td><td>${p.points}</td><td>$${proj.toFixed(1)}M</td><td>${status}</td>`;
-          }
-          t.append(row);
-        });
-        tbl.appendChild(t);
-        salaryContent.appendChild(tbl);
+        tbl.appendChild(row);
       });
-    }
-    function projectSalary(p, isG) {
-      let val = isG
-        ? 3 + 0.02*(p.savePct*100) - 0.1*p.gaa
-        : 0.13*p.points;
-      if(p.age<26) val*=1.1;
-      if(p.age>32) val*=0.9;
-      if(/(Elite|Franchise)/.test(p.potential)) val*=1.1;
-      return val;
-    }
-  </script>
+      cont.appendChild(tbl);
+      sc.appendChild(cont);
+    });
+  }
+
+  function projectSalary(p,isG){
+    let v = isG
+      ? 3 + 0.02*(p.savePct*100) - 0.1*p.gaa
+      : 0.13*p.points;
+    if(p.age<26) v*=1.1;
+    if(p.age>32) v*=0.9;
+    if(/(Elite|Franchise)/.test(p.potential)) v*=1.1;
+    return v;
+  }
+</script>
 </body>
 </html>
