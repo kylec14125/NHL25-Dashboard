@@ -1,12 +1,7 @@
-// players.js
-
 document.addEventListener('DOMContentLoaded', () => {
   const tableBody = document.querySelector('#playersTable tbody');
-
-  // Fetch the live CSV data from your Google Sheets
   const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR0zy1FIjBS2wfjqFjUqKOK_lmXKwcTQCDRghHipHLznFhV6aFjxrUb0Et0L950k3qHEsrqlEs72A29/pub?output=csv';
 
-  // Load PapaParse from CDN
   const script = document.createElement('script');
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js';
   document.head.appendChild(script);
@@ -18,10 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
         Papa.parse(csvData, {
           header: true,
           skipEmptyLines: true,
-          transformHeader: header => header.trim(), // This line trims whitespace
+          transformHeader: header => header.trim(),
           complete: function(results) {
             const data = results.data;
-            console.log(data); // View parsed data
             displayPlayerData(data);
           }
         });
@@ -32,31 +26,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function displayPlayerData(players) {
     tableBody.innerHTML = ''; // Clear existing data
     players.forEach(player => {
-console.log(Object.keys(player));
+      const cleanPlayer = {};
+      Object.keys(player).forEach(key => {
+        cleanPlayer[key.trim()] = player[key];
+      });
 
       const row = document.createElement('tr');
-
       row.innerHTML = `
-        <td>${player['Player Name']}</td>
-        <td>${player['Age']}</td>
-        <td>${player['Play Type']}</td>
-        <td>${player['Position']}</td>
-        <td>${player['Overall']}</td>
-        <td>${player['Potential']}</td>
-        <td>${player['Goals']}</td>
-        <td>${player['Assists']}</td>
-        <td>${player['Points']}</td>
-        <td>${player['Plus Minus']}</td>
-        <td>${player['Contract Amount']}</td>
-        <td>${player['Contact Years']}</td>
+        <td>${cleanPlayer['Player Name']}</td>
+        <td>${cleanPlayer['Age']}</td>
+        <td>${cleanPlayer['Play Type']}</td>
+        <td>${cleanPlayer['Position']}</td>
+        <td>${cleanPlayer['Overall']}</td>
+        <td>${cleanPlayer['Potential']}</td>
+        <td>${cleanPlayer['Goals']}</td>
+        <td>${cleanPlayer['Assists']}</td>
+        <td>${cleanPlayer['Points']}</td>
+        <td>${cleanPlayer['Plus Minus']}</td>
+        <td>${cleanPlayer['Contract Amount']}</td>
+        <td>${cleanPlayer['Contact Years']}</td>
       `;
-
-      // Highlight top performers (Points ≥ 10)
-      if (parseInt(player['Points']) >= 10) {
-        row.style.backgroundColor = '#224c61'; // Seafoam highlight
-      }
-
       tableBody.appendChild(row);
     });
+
+    // Initialize DataTable for sorting
+    $('#playersTable').DataTable();
   }
 });
