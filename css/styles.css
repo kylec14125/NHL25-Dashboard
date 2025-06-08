@@ -37,11 +37,13 @@ nav ul li a:focus {
 }
 
 main {
-  max-width: 1200px;
+width: 100%;
+  max-width: 1200px; /* keep max width for readability */
   margin: 2rem auto;
   padding: 2rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
+  box-sizing: border-box; /* ensure padding is included in width */
 }
 
 main h2 {
