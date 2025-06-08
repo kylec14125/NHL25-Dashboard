@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Kyle's AI Assistant</title>
 <style>
-  body { background-color: #001628; color: #ffffff; font-family: Arial, sans-serif; margin: 0; }
+  body {
+    background: linear-gradient(135deg, #001628, #005979);
+    color: #ffffff;
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 0;
+  }
   header { background-color: #005979; padding: 20px; text-align: center; position: relative; }
   h1 { margin: 0; color: #ffffff; font-size: 2rem; }
   header img { width: 50px; height: auto; position: absolute; top: 15px; left: 15px; }
@@ -285,7 +290,6 @@ function updateChemColor(box, value) {
   else box.classList.add('chem-neutral');
 }
 
-// 🚀 Drag and drop fix
 function enableGlobalDragAndDrop() {
   const chips = document.querySelectorAll('.chip');
   chips.forEach(chip => {
