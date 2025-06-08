@@ -66,9 +66,10 @@ th, td {
 }
 
 th {
-  background-color: #00121e;
+ background-color: #00121e;
   color: #76c5d5;
   font-size: 1rem;
+  white-space: nowrap; /* Keep header text in one line */
 }
 
 td {
