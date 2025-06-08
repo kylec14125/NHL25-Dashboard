@@ -1,0 +1,82 @@
+/* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Helvetica', sans-serif;
+  background: linear-gradient(135deg, #0e1b2d 0%, #18334f 100%);
+  color: #d1d9e0;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #00121e;
+  padding: 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+header h1 {
+  color: #d1d9e0;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+nav ul li a {
+  color: #76c5d5; /* Seafoam green highlight */
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+nav ul li a:hover,
+nav ul li a:focus {
+  background-color: rgba(118, 197, 213, 0.2);
+}
+
+main {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+main h2 {
+  color: #76c5d5;
+  margin-bottom: 1rem;
+}
+
+main p,
+main ul li {
+  margin-bottom: 1rem;
+  color: #d1d9e0;
+}
+
+ul {
+  padding-left: 1rem;
+}
+
+li::marker {
+  color: #76c5d5;
+}
+
+/* Responsive tweaks */
+@media (max-width: 600px) {
+  nav ul {
+    flex-direction: column;
+  }
+}
