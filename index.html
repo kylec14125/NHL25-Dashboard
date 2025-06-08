@@ -21,11 +21,7 @@
   .button { background-color: #e03a3e; color: #fff; border: none; padding: 10px 15px; cursor: pointer; margin-top: 10px; }
   .button:hover { background-color: #c22e2e; }
 
-  .grid { display: grid; gap: 10px; }
-  .forwards { grid-template-columns: repeat(3, 1fr); }
-  .defense { grid-template-columns: repeat(2, 1fr); }
-  .goalies { grid-template-columns: repeat(2, 1fr); }
-
+  .line { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) auto; gap: 10px; margin-bottom: 10px; align-items: center; }
   .chip {
     background-color: #005979;
     border: 1px solid #012d40;
@@ -40,16 +36,21 @@
     font-size: 0.9rem;
   }
   .chip.placeholder { background-color: #e03a3e; }
-
-  .position-header {
-    display: grid;
-    gap: 10px;
+  .chem-box {
+    width: 50px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     font-weight: bold;
-    margin-bottom: 5px;
-    text-align: center;
+    border-radius: 5px;
   }
-  .forwards-header { grid-template-columns: repeat(3, 1fr); }
-  .defense-header { grid-template-columns: repeat(2, 1fr); }
+  .chem-positive { background-color: #008000; }
+  .chem-neutral { background-color: #999999; }
+  .chem-negative { background-color: #e03a3e; }
+  .chem-controls { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .chem-controls button { font-size: 0.7rem; padding: 2px; }
 </style>
 </head>
 <body>
@@ -88,27 +89,19 @@
   <h2>Lineups</h2>
 
   <h3>Forwards</h3>
-  <div class="position-header forwards-header">
-    <div>LW</div>
-    <div>C</div>
-    <div>RW</div>
-  </div>
-  <div id="forwards" class="grid forwards"></div>
+  <div id="forwards"></div>
 
   <h3>Defense</h3>
-  <div class="position-header defense-header">
-    <div>LD</div>
-    <div>RD</div>
-  </div>
-  <div id="defense" class="grid defense"></div>
+  <div id="defense"></div>
 
   <h3>Goalies</h3>
-  <div id="goalies" class="grid goalies"></div>
+  <div id="goalies"></div>
 </div>
 
 <script>
   let players = [];
   let initialized = false;
+  let chemValues = { forwards: [0,0,0,0], defense: [0,0,0] };
 
   function showTab(tabId) {
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
@@ -171,23 +164,36 @@
     defense.innerHTML = '';
     goalies.innerHTML = '';
 
-    if (players.length > 0) {
-      players.forEach((player, index) => {
-        const chip = createChip(player, index);
-        if (['LW', 'C', 'RW'].includes(player.position)) {
-          forwards.appendChild(chip);
-        } else if (['LD', 'RD'].includes(player.position)) {
-          defense.appendChild(chip);
-        } else if (player.position === 'G') {
-          goalies.appendChild(chip);
-        }
-      });
+    let fIndex = 0;
+    for (let i = 0; i < 4; i++) {
+      const line = document.createElement('div');
+      line.classList.add('line');
+      for (let j = 0; j < 3; j++) {
+        const player = players[fIndex] || null;
+        line.appendChild(createChip(player, fIndex));
+        fIndex++;
+      }
+      line.appendChild(createChemBox('forwards', i));
+      forwards.appendChild(line);
     }
 
-    // 🟩 Always fill empty slots with "Player Needed" chips
-    while (forwards.children.length < 12) forwards.appendChild(createChip(null, -1));
-    while (defense.children.length < 6) defense.appendChild(createChip(null, -1));
-    while (goalies.children.length < 2) goalies.appendChild(createChip(null, -1));
+    let dIndex = fIndex;
+    for (let i = 0; i < 3; i++) {
+      const line = document.createElement('div');
+      line.classList.add('line');
+      for (let j = 0; j < 2; j++) {
+        const player = players[dIndex] || null;
+        line.appendChild(createChip(player, dIndex));
+        dIndex++;
+      }
+      line.appendChild(createChemBox('defense', i));
+      defense.appendChild(line);
+    }
+
+    for (let i = dIndex; i < dIndex + 2; i++) {
+      const chip = createChip(players[i] || null, i);
+      goalies.appendChild(chip);
+    }
 
     enableGlobalDragAndDrop();
   }
@@ -206,6 +212,40 @@
     ` : 'Player Needed';
     if (!player) chip.classList.add('placeholder');
     return chip;
+  }
+
+  function createChemBox(type, index) {
+    const chemBox = document.createElement('div');
+    chemBox.classList.add('chem-box');
+    updateChemColor(chemBox, chemValues[type][index]);
+    chemBox.innerHTML = chemValues[type][index];
+
+    const controls = document.createElement('div');
+    controls.classList.add('chem-controls');
+    const inc = document.createElement('button');
+    inc.textContent = '+';
+    inc.onclick = () => adjustChem(type, index, 1, chemBox);
+    const dec = document.createElement('button');
+    dec.textContent = '–';
+    dec.onclick = () => adjustChem(type, index, -1, chemBox);
+    controls.appendChild(inc);
+    controls.appendChild(dec);
+
+    chemBox.appendChild(controls);
+    return chemBox;
+  }
+
+  function adjustChem(type, index, delta, box) {
+    chemValues[type][index] = Math.max(-5, Math.min(5, chemValues[type][index] + delta));
+    box.firstChild.textContent = chemValues[type][index];
+    updateChemColor(box, chemValues[type][index]);
+  }
+
+  function updateChemColor(box, value) {
+    box.classList.remove('chem-positive', 'chem-neutral', 'chem-negative');
+    if (value > 0) box.classList.add('chem-positive');
+    else if (value < 0) box.classList.add('chem-negative');
+    else box.classList.add('chem-neutral');
   }
 
   function enableGlobalDragAndDrop() {
