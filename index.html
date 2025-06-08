@@ -28,7 +28,7 @@
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     border-radius: 5px;
   }
   .lineups-container .chip.placeholder { background-color: #e03a3e; }
@@ -74,6 +74,7 @@
         <th>Age</th>
         <th>Overall</th>
         <th>Contract</th>
+        <th>Potential</th>
         <th>Projected Salary</th>
       </tr>
     </thead>
@@ -140,6 +141,7 @@
         <td>${player.age}</td>
         <td>${player.overall}</td>
         <td>${player.contract}</td>
+        <td>${player.potential}</td>
         <td>${projectSalary(player)}</td>
       `;
       tableBody.appendChild(row);
@@ -208,9 +210,9 @@
     chip.ondragstart = e => e.dataTransfer.setData('text/plain', index);
     chip.innerHTML = player ? `
       <strong>${player.name}</strong><br>
-      Type: SNP<br>
-      Contract: ${player.contract}<br>
-      Potential: TBD
+      ${player.position}, Age: ${player.age}<br>
+      Potential: ${player.potential}<br>
+      Contract: ${player.contract}
     ` : 'Player Needed';
     if (!player) chip.classList.add('placeholder');
     return chip;
