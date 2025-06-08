@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Players - NHL Assistant GM</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>NHL Assistant GM</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Dashboard</a></li>
+        <li><a href="players.html">Players</a></li>
+        <li><a href="prospects.html">Prospects</a></li>
+        <li><a href="lineup.html">Lineup</a></li>
+        <li><a href="salary.html">Salary Cap</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Player Stats</h2>
+    <p>Upload your CSV file with updated player stats to track progression and get insights.</p>
+    
+    <input type="file" id="csvFileInput" accept=".csv" />
+    <button id="uploadButton">Upload</button>
+    
+    <h3>Player Data</h3>
+    <table id="playersTable" border="1">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Position</th>
+          <th>Overall</th>
+          <th>Potential</th>
+          <th>Goals</th>
+          <th>Assists</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Player data will be inserted here -->
+      </tbody>
+    </table>
+  </main>
+
+  <script src="js/players.js"></script>
+</body>
+</html>
