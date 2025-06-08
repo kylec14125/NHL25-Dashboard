@@ -129,14 +129,12 @@ function createTable(title, group, isGoalie) {
 function projectSalary(player, isGoalie) {
   let projected;
   if (isGoalie) {
-    // Adjusted goalie formula to better match real-world vibes
-    projected = 3 + (0.5 * (player.savePct * 100)) - (0.2 * player.gaa);
+    // 🔧 Adjusted goalie formula to produce more realistic salaries (~4-6M range)
+    projected = 3 + (0.02 * (player.savePct * 100)) - (0.1 * player.gaa);
   } else {
-    // Updated skater base multiplier to better reflect modern market
     projected = 0.13 * player.points;
   }
 
-  // Age & potential adjustments
   if (player.age < 26) projected *= 1.1;
   if (player.age > 32) projected *= 0.9;
   if (player.potential && /(Elite|Franchise)/.test(player.potential)) projected *= 1.1;
