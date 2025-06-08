@@ -130,7 +130,7 @@
       try {
         players = JSON.parse(e.target.result);
         displayData(players);
-        buildLineups(); // 🟩 This is the critical fix!
+        buildLineups();
       } catch (err) {
         alert('Error reading file: ' + err.message);
       }
@@ -182,11 +182,12 @@
           goalies.appendChild(chip);
         }
       });
-    } else {
-      for (let i = 0; i < 12; i++) forwards.appendChild(createChip(null, -1));
-      for (let i = 0; i < 6; i++) defense.appendChild(createChip(null, -1));
-      for (let i = 0; i < 2; i++) goalies.appendChild(createChip(null, -1));
     }
+
+    // 🟩 Always fill empty slots with "Player Needed" chips
+    while (forwards.children.length < 12) forwards.appendChild(createChip(null, -1));
+    while (defense.children.length < 6) defense.appendChild(createChip(null, -1));
+    while (goalies.children.length < 2) goalies.appendChild(createChip(null, -1));
 
     enableGlobalDragAndDrop();
   }
