@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Players – Kyle's AI Assistant</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+  <header>
+    <img src="https://www.sportslogos.net/logos/65/6528/full/seattle_kraken_primary_logo_2021_sportslogosnet-1736.png" alt="Kraken Logo"/>
+    <h1>Kyle's AI Assistant</h1>
+    <nav>
+      <a href="players.html">Players</a> |
+      <a href="lineups.html">Lineups</a> |
+      <a href="salary.html">Salary</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Upload Player Data (JSON)</h2>
+    <input type="file" id="dataFile"/>
+    <button id="loadBtn">Load Data</button>
+
+    <h2>Player Stats</h2>
+    <table id="playerTable">
+      <thead>
+        <tr>
+          <th>Name</th><th>Position</th><th>Age</th><th>Overall</th>
+          <th>Contract</th><th>Potential</th><th>Projected Salary</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script src="js/players.js"></script>
+</body>
+</html>
