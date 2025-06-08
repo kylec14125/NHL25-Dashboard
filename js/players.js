@@ -50,6 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initialize DataTable for sorting
-    $('#playersTable').DataTable();
+    if ($.fn.DataTable.isDataTable('#playersTable')) {
+      $('#playersTable').DataTable().destroy();
+    }
+    $('#playersTable').DataTable({
+      paging: false,
+      info: false,
+      searching: false
+    });
   }
 });
